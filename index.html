@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width">
+  <title>🎧 Morse Transmitter</title>
+  <base target="_blank">
+  <style>
+    body, input {
+      font-family: monospace;
+      font-size: 15px;
+    }
+    #txtDelay {
+      width: 6em;
+    }
+    #txtOutput {
+      width: 100%;
+      height: 10em;
+    }
+    .example span:nth-child(even) {
+      color: #900;
+    }
+    #txtStatus {
+      height: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎧 Morse Transmitter</h1>
+  <div>⏸️ Pause/Play: . (dit)</div>
+  <div>⏯️ Next track: - (dah)</div>
+  <div>⏮️ Prev track: ← (del)</div>
+  <div>
+    ⏰ Delay: <input id="txtDelay" type="number" value="1500"> ms
+  </div>
+  <div>
+    ⌛️ Input: <span id="txtInput"></span>
+  </div>
+  <div>
+    <div>📖 Words:</div>
+    <div>
+      <textarea id="txtOutput"></textarea>
+    </div>
+  </div>
+  <div id="txtStatus"></div>
+  <div>
+    <p>💡
+      <a href="https://en.wikipedia.org/wiki/Morse_code">Morse Code Wiki</a>
+    </p>
+    <p class="example">🧪
+      <span class="H">....</span>
+      <span class="E">.</span>
+      <span class="L">.-..</span>
+      <span class="L">.-..</span>
+      <span class="O">---</span>
+      <span class="W">.--</span>
+      <span class="O">---</span>
+      <span class="R">.-.</span>
+      <span class="L">.-..</span>
+      <span class="D">-..</span>
+    </p>
+  </div>
+  <!-- TODO: Audio API -->
+  <audio id="audio" src="dummy.mp4" loop="true" controls hidden></audio>
+  <script>
+    const table = {
+      '.-':    'A',
+      '-...':  'B',
+      '-.-.':  'C',
+      '-..':   'D',
+      '.':     'E',
+      '..-.':  'F',
+      '--.':   'G',
+      '....':  'H',
+      '..':    'I',
+      '.---':  'J',
+      '-.-':   'K',
+      '.-..':  'L',
+      '--':    'M',
+      '-.':    'N',
+      '---':   'O',
+      '.--.':  'P',
+      '--.-':  'Q',
+      '.-.':   'R',
+      '...':   'S',
+      '-':     'T',
+      '..-':   'U',
+      '...-':  'V',
+      '.--':   'W',
+      '-..-':  'X',
+      '-.--':  'Y',
+      '--..':  'Z',
+      '.----': '1',
+      '..---': '2',
+      '...--': '3',
+      '....-': '4',
+      '.....': '5',
+      '-....': '6',
+      '--...': '7',
+      '---..': '8',
+      '----.': '9',
+      '-----': '0',
+    }
+
+    let timerId = 0
+    let inputCodes = ''
+
+    function showInput() {
+      txtInput.textContent = inputCodes || 'reading...'
+    }
+
+    function flushInput() {
+      const char = table[inputCodes]
+      if (char) {
+        say(char)
+        txtOutput.value += char
+      } else {
+        say('invalid')
+      }
+      inputCodes = ''
+      showInput()
+    }
+
+    function say(char) {
+      const audio = new Audio('voice/' + char + '.mp4')
+      audio.play()
+    }
+
+    function showStatus(msg) {
+      txtStatus.textContent = msg
+    }
+
+    function press(type) {
+      inputCodes += type
+      showInput()
+      if (timerId) {
+        clearTimeout(timerId)
+      }
+      timerId = setTimeout(flushInput, +txtDelay.value)
+    }
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+      press('.')
+    })
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      press('-')
+    })
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      inputCodes = ''
+      showInput()
+      say('backspace')
+      clearTimeout(timerId)
+      txtOutput.value = txtOutput.value.slice(0, -1)
+    })
+
+    showStatus('click anywhere to start...')
+
+    window.addEventListener('click', () => {
+      showStatus('audio ready')
+      audio.play(
+      showInput())
+    }, {once: true})
+  </script>
+</body>
+</html>
