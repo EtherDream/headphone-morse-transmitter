@@ -112,7 +112,7 @@
     function flushInput() {
       const char = table[inputCodes]
       if (char) {
-        say(char)
+        say(char.toLowerCase())
         txtOutput.value += char
       } else {
         say('invalid')
