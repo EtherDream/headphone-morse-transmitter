@@ -8,6 +8,8 @@ Using this feature, we can use the headphones as a morse transmitter.
 
 [https://etherdream.github.io/headphone-morse-transmitter/](https://etherdream.github.io/headphone-morse-transmitter/)
 
+https://github.com/EtherDream/headphone-morse-transmitter/assets/1072787/c5353575-128f-4915-8607-8f1a49d47a5a
+
 If you're using an Airpod, a single press sends a dit (.) , a double press sends a dah(-), and a triple press deletes the previous character.
 
 When the delay time is reached, the dit and dah codes in the input will be converted to a letter or number.
