@@ -61,7 +61,6 @@
     </p>
   </div>
   <!-- TODO: Audio API -->
-  <audio id="audio" src="dummy.mp4" loop="true" controls hidden></audio>
   <script>
     const table = {
       '.-':    'A',
@@ -102,6 +101,8 @@
       '-----': '0',
     }
 
+    let ready = false
+
     let timerId = 0
     let inputCodes = ''
 
@@ -122,8 +123,8 @@
     }
 
     function say(char) {
-      const audio = new Audio('voice/' + char + '.mp4')
-      audio.play()
+      const voiceAudio = new Audio('voice/' + char + '.mp4')
+      voiceAudio.play()
     }
 
     function showStatus(msg) {
@@ -139,26 +140,30 @@
       timerId = setTimeout(flushInput, +txtDelay.value)
     }
 
-    navigator.mediaSession.setActionHandler('pause', () => {
-      press('.')
-    })
-    navigator.mediaSession.setActionHandler('nexttrack', () => {
-      press('-')
-    })
-    navigator.mediaSession.setActionHandler('previoustrack', () => {
-      inputCodes = ''
-      showInput()
-      say('backspace')
-      clearTimeout(timerId)
-      txtOutput.value = txtOutput.value.slice(0, -1)
+    window.addEventListener('keydown', (event) => {
+      if (!ready) return
+      switch (event.key) {
+        case 'MediaPlayPause':
+          press('.')
+          break
+        case 'MediaTrackNext':
+          press('-')
+          break
+        case 'MediaTrackPrevious':
+          inputCodes = ''
+          showInput()
+          say('backspace')
+          clearTimeout(timerId)
+          txtOutput.value = txtOutput.value.slice(0, -1)
+          break
+      }
     })
 
     showStatus('click anywhere to start...')
 
     window.addEventListener('click', () => {
-      showStatus('audio ready')
-      audio.play(
-      showInput())
+      ready = true
+      showStatus('input ready')
     }, {once: true})
   </script>
 </body>
