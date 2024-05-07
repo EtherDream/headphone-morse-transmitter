@@ -60,8 +60,7 @@
       <span class="D">-..</span>
     </p>
   </div>
-  <!-- TODO: Audio API -->
-  <audio id="audio" src="dummy.mp4" loop="true" controls hidden></audio>
+  <audio id="audio" loop="true" controls hidden></audio>
   <script>
     const table = {
       '.-':    'A',
@@ -122,8 +121,7 @@
     }
 
     function say(char) {
-      const audio = new Audio('voice/' + char + '.mp4')
-      audio.play()
+      new Audio(`voice/${char}.mp4`).play()
     }
 
     function showStatus(msg) {
@@ -155,10 +153,52 @@
 
     showStatus('click anywhere to start...')
 
-    window.addEventListener('click', () => {
-      showStatus('audio ready')
-      audio.play(
-      showInput())
+
+    function genBgm() {
+      // http://soundfile.sapp.org/doc/WaveFormat/
+      const SAMPLE_RATE = 48000
+      const NUM_SAMPLES = SAMPLE_RATE * 20   // 20s
+
+      const NUM_CHANNELS = 1
+      const BITS_PER_SAMPLE = 16
+
+      const SUB_CHUNK2_SIZE = NUM_SAMPLES * NUM_CHANNELS * BITS_PER_SAMPLE / 8
+      const BYTE_RATE = SAMPLE_RATE * NUM_CHANNELS * BITS_PER_SAMPLE / 8
+      const BLOCK_ALIGN = NUM_CHANNELS * BITS_PER_SAMPLE / 8
+
+      const bytes = new Uint8Array(44 + SUB_CHUNK2_SIZE)
+      const view = new DataView(bytes.buffer)
+
+      view.setUint32(0,  0x52494646)        // "RIFF"
+      view.setUint32(4,  36 + SUB_CHUNK2_SIZE, true)
+      view.setUint32(8,  0x57415645)        // "WAVE"
+      view.setUint32(12, 0x666D7420)        // "fmt "
+      view.setUint32(16, 16, true)          // Subchunk1Size (PCM = 16)
+      view.setUint16(20, 1, true)           // AudioFormat (PCM = 1)
+      view.setUint16(22, NUM_CHANNELS, true)
+      view.setUint32(24, SAMPLE_RATE, true)
+      view.setUint32(28, BYTE_RATE, true)
+      view.setUint16(32, BLOCK_ALIGN, true)
+      view.setUint16(34, BITS_PER_SAMPLE, true)
+      view.setUint32(36, 0x64617461)        // "data"
+      view.setUint32(40, SUB_CHUNK2_SIZE, true)
+
+      const soundData = new Uint16Array(bytes.buffer, 44)
+      soundData.fill(1000)
+
+      const blob = new Blob([bytes], {
+        type: 'audio/wav',
+      })
+      return URL.createObjectURL(blob)
+    }
+
+    window.addEventListener('pointerdown', () => {
+      audio.volume = 0.1
+      audio.src = genBgm()
+      audio.play()
+
+      showStatus('input ready')
+      showInput()
     }, {once: true})
   </script>
 </body>

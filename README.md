@@ -16,4 +16,4 @@ When the delay time is reached, the dit and dah codes in the input will be conve
 
 Shorter delays allow faster input, but also increase the chance of errors.
 
-> Known issues: Firefox is not supported yet.
+> Known issues: Firefox seems to have some issues with handling headphone events.
