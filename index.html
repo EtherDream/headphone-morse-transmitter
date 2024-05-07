@@ -101,7 +101,7 @@
       '-----': '0',
     }
 
-    let timerId = 0
+    let timerId = -1
     let inputCodes = ''
 
     function showInput() {
@@ -131,9 +131,7 @@
     function press(type) {
       inputCodes += type
       showInput()
-      if (timerId) {
-        clearTimeout(timerId)
-      }
+      clearTimeout(timerId)
       timerId = setTimeout(flushInput, +txtDelay.value)
     }
 
