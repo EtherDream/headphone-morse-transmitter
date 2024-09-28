@@ -8,12 +8,19 @@ Using this feature, we can use the headphones as a morse transmitter.
 
 [https://etherdream.github.io/headphone-morse-transmitter/](https://etherdream.github.io/headphone-morse-transmitter/)
 
+⏸️ = dit
+
+⏯️ = dah
+
+⏮️ = backspace
+
 https://github.com/EtherDream/headphone-morse-transmitter/assets/1072787/c5353575-128f-4915-8607-8f1a49d47a5a
 
-If you're using an Airpod, a single press sends a dit (.) , a double press sends a dah(-), and a triple press deletes the previous character.
+When the `delay` time is reached, the `.` and `-` codes in the input buffer will be flushed.
 
-When the delay time is reached, the dit and dah codes in the input will be converted to a letter or number.
+If you don't want to use a headphone, you can also use the multimedia keys on the keyboard, which can even set a shorter delay, such as 500ms:
 
-Shorter delays allow faster input, but also increase the chance of errors.
+https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
 
-> Known issues: Firefox seems to have some issues with handling headphone events.
+> [!Tip]
+> This program can run in the background, even if the browser is minimized or the screen is locked. So you can practice Morse code before bedtime with this program, using only your fingers and ears, without eyes!
