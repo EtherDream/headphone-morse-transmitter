@@ -23,4 +23,4 @@ If you don't want to use a headphone, you can also use the multimedia keys on th
 https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
 
 > [!Tip]
-> This program can run in the background, even if the browser is minimized or the screen is locked. So you can practice Morse code before bedtime with this program, using only your fingers and ears, without eyes!
+> This program can run in the background, even if the browser is minimized or the screen is locked. So you can use this program on your phone to practice Morse code, using only your fingers and ears, without eyes!
