@@ -143,13 +143,6 @@
   let sayAudioCtx
 
   async function say(char) {
-    let words = txtOutput.value
-    const len = words.length
-    if (len > 30) {
-      words = '...' + words.slice(-30)
-    }
-    updateMediaMeta(`[${len}] ${words}`)
-
     let audioBuf = sayBufCache[char]
     if (!audioBuf) {
       const fileName = char.toLowerCase()
@@ -163,6 +156,13 @@
     source.buffer = audioBuf
     source.connect(sayAudioCtx.destination)
     source.start()
+
+    const wordsLen = txtOutput.value.length
+    const wordsOut = wordsLen > 30
+      ? '...' + txtOutput.value.slice(-30)
+      : txtOutput.value
+
+    updateMediaMeta(`[${wordsLen}] ${wordsOut}`)
   }
 
   function showStatus(msg) {
@@ -215,6 +215,7 @@
   }
 
   function updateMediaMeta(words) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/MediaMetadata#browser_compatibility
     navigator.mediaSession.metadata = new MediaMetadata({
       title: 'Morse Code',
       artist: words,
