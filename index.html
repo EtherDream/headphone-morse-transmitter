@@ -11,7 +11,7 @@
     font-size: 15px;
   }
   label {
-    width: 1.75em;
+    width: 1.2em;
     display: inline-block;
   }
   #txtDelay {
@@ -32,24 +32,28 @@
 <body>
 <h1>🎧 Morse Transmitter</h1>
 <div>
-  <label>⏸️</label>Pause/Play: · (dit)
+  <label>⏸️</label>
+  Pause/Play: · (dit)
 </div>
 <div>
-  <label>⏯️</label>Next track: ─ (dah)
+  <label>⏯️</label>
+  Next track: ─ (dah)
 </div>
 <div>
-  <label>⏮️</label>Prev track: ← (del)
+  <label>⏮️</label>
+  Prev track: ← (del)
 </div>
 <div>
-  <label>⏰</label>Delay:
-  <input id="txtDelay" type="number" value="1500"> ms
+  <label>⏰</label>
+  Delay: <input id="txtDelay" type="number" value="1500"> ms
 </div>
 <div>
-  <label>⌛️</label>Input:
-  <span id="txtInput"></span>
+  <label>⌛️</label>
+  Input: <span id="txtInput"></span>
 </div>
 <div>
-  <label>📖</label>Words:
+  <label>📖</label>
+  Words:
 </div>
 <div>
   <textarea id="txtOutput"></textarea>
@@ -144,10 +148,7 @@
     if (len > 30) {
       words = '...' + words.slice(-30)
     }
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'Morse Code',
-      artist: `[${len}] ${words}`,
-    })
+    updateMediaMeta(`[${len}] ${words}`)
 
     let audioBuf = sayBufCache[char]
     if (!audioBuf) {
@@ -213,6 +214,20 @@
     return URL.createObjectURL(blob)
   }
 
+  function updateMediaMeta(words) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Morse Code',
+      artist: words,
+      artwork: [
+        {
+          src: 'logo.png',
+          sizes: '128x128',
+          type: 'image/png',
+        },
+      ]
+    })
+  }
+
   function init() {
     window.removeEventListener('pointerdown', init)
     window.removeEventListener('keydown', init)
@@ -239,6 +254,7 @@
       txtOutput.value = txtOutput.value.slice(0, -1)
       say('backspace')
     })
+    updateMediaMeta('')
   }
 
   function main() {
