@@ -3,6 +3,7 @@ char_array=(
   0 1 2 3 4 5 6 7 8 9
   backspace
   invalid
+  ready
 )
 for ch in ${char_array[@]}; do
   echo "[$ch]"
