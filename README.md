@@ -8,15 +8,17 @@ Using this feature, we can use the headphones as a morse transmitter.
 
 [https://etherdream.github.io/headphone-morse-transmitter/](https://etherdream.github.io/headphone-morse-transmitter/)
 
-⏸️ = dit
+⏸️ = dit (.)
 
-⏯️ = dah
+⏯️ = dah (-)
 
-⏮️ = backspace
+⏮️ = flush or backspace
 
-https://github.com/EtherDream/headphone-morse-transmitter/assets/1072787/c5353575-128f-4915-8607-8f1a49d47a5a
+https://github.com/user-attachments/assets/44faa4b1-9ab1-43a3-9e6d-8add6a3f3b26
 
-When the `delay` time is reached, the `.` and `-` codes in the input buffer will be flushed.
+When ⏮️ is pressed or `delay` timeout is reached, the `.` and `-` codes in the input buffer will be flushed.
+
+If the input buffer is empty, pressing ⏮️ deletes the last char.
 
 If you don't want to use a headphone, you can also use the multimedia keys on the keyboard, which can even set a shorter delay, such as 500ms:
 

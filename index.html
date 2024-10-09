@@ -41,7 +41,7 @@
 </div>
 <div>
   <label>⏮️</label>
-  Prev track: ← (del)
+  Prev track: ← (flush or backspace)
 </div>
 <div>
   <label>⏰</label>
@@ -247,6 +247,11 @@
       press('-')
     })
     navigator.mediaSession.setActionHandler('previoustrack', () => {
+      if (inputCodes) {
+        flushInput()
+        clearTimeout(timerId)
+        return
+      }
       inputCodes = ''
       showInput()
       clearTimeout(timerId)
