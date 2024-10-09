@@ -7,6 +7,8 @@ char_array=(
 for ch in ${char_array[@]}; do
   echo "[$ch]"
   say $ch -o voice/$ch.aiff
+
+  # https://superuser.com/questions/579008/add-1-second-of-silence-to-audio-through-ffmpeg
   ffmpeg -y \
     -i voice/$ch.aiff \
     -f lavfi -t 20 -i anullsrc \
@@ -17,4 +19,4 @@ done
 rm voice/*.aiff
 
 # ngx_http_gzip_static_module
-zopfli voice/*
+zopfli voice/*.mp4
