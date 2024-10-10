@@ -26,3 +26,11 @@ https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
 
 > [!Tip]
 > This program can run in the background, even if the browser is minimized or the screen is locked. So you can use this program on your phone to practice Morse code, using only your fingers and ears, without eyes!
+
+## Known Issues
+
+Firefox is unstable on multiple systems.
+
+Under MacOS, sometimes only one headset can send commands (e.g. my AirPods right headset works fine, but left headset won't pause multiple times).
+
+Under some Windows, the first ~0.5s of sound is lost (even when saved to disk with the system player, probably a playback buffer issue), but Chrome works fine.
