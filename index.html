@@ -62,7 +62,7 @@
 <div>
   <p>
     <label>💡</label>
-    <a href="https://en.wikipedia.org/wiki/Morse_code">Morse Code Wiki</a>
+    <a href="https://morsecode.world/international/morse.html">International Morse Code</a>
   </p>
   <p class="example">
     <label>🧪</label>
@@ -71,6 +71,7 @@
     <span class="L">.-..</span>
     <span class="L">.-..</span>
     <span class="O">---</span>
+    <span class="LN">.-.-</span>
     <span class="W">.--</span>
     <span class="O">---</span>
     <span class="R">.-.</span>
@@ -89,42 +90,64 @@
 </div>
 <script>
   const table = {
-    '.-':    'A',
-    '-...':  'B',
-    '-.-.':  'C',
-    '-..':   'D',
-    '.':     'E',
-    '..-.':  'F',
-    '--.':   'G',
-    '....':  'H',
-    '..':    'I',
-    '.---':  'J',
-    '-.-':   'K',
-    '.-..':  'L',
-    '--':    'M',
-    '-.':    'N',
-    '---':   'O',
-    '.--.':  'P',
-    '--.-':  'Q',
-    '.-.':   'R',
-    '...':   'S',
-    '-':     'T',
-    '..-':   'U',
-    '...-':  'V',
-    '.--':   'W',
-    '-..-':  'X',
-    '-.--':  'Y',
-    '--..':  'Z',
-    '.----': '1',
-    '..---': '2',
-    '...--': '3',
-    '....-': '4',
-    '.....': '5',
-    '-....': '6',
-    '--...': '7',
-    '---..': '8',
-    '----.': '9',
-    '-----': '0',
+    '.-':    ['a', 'A',],
+    '-...':  ['b', 'B',],
+    '-.-.':  ['c', 'C',],
+    '-..':   ['d', 'D',],
+    '.':     ['e', 'E',],
+    '..-.':  ['f', 'F',],
+    '--.':   ['g', 'G',],
+    '....':  ['h', 'H',],
+    '..':    ['i', 'I',],
+    '.---':  ['j', 'J',],
+    '-.-':   ['k', 'K',],
+    '.-..':  ['l', 'L',],
+    '--':    ['m', 'M',],
+    '-.':    ['n', 'N',],
+    '---':   ['o', 'O',],
+    '.--.':  ['p', 'P',],
+    '--.-':  ['q', 'Q',],
+    '.-.':   ['r', 'R',],
+    '...':   ['s', 'S',],
+    '-':     ['t', 'T',],
+    '..-':   ['u', 'U',],
+    '...-':  ['v', 'V',],
+    '.--':   ['w', 'W',],
+    '-..-':  ['x', 'X',],
+    '-.--':  ['y', 'Y',],
+    '--..':  ['z', 'Z',],
+    '.----': ['1', '1',],
+    '..---': ['2', '2',],
+    '...--': ['3', '3',],
+    '....-': ['4', '4',],
+    '.....': ['5', '5',],
+    '-....': ['6', '6',],
+    '--...': ['7', '7',],
+    '---..': ['8', '8',],
+    '----.': ['9', '9',],
+    '-----': ['0', '0',],
+
+    '.-.-':     ['new-line', '\n'],
+    '........': ['error', '\r'],
+
+    '.-...':    ['ampersand', '&'],
+    '.----.':   ['apostrophe', "'"],
+    '.--.-.':   ['at', '@'],
+    '-.--.-':   ['bracket-close', ')'],
+    '-.--.':    ['bracket-open', '('],
+    '---...':   ['colon', ':'],
+    '--..--':   ['comma', ','],
+    '-...-':    ['equals', '='],
+    '-.-.--':   ['exclamation', '!'],
+    '.-.-.-':   ['full-stop', '.'],
+    '-....-':   ['hyphen', '-'],
+    '-..-':     ['multiplication', '*'],
+    '.-.-.':    ['plus', '+'],
+    '.-..-.':   ['quotation', '"'],
+    '..--..':   ['question', '?'],
+    '-..-.':    ['slash', '/'],
+
+    '------..-.-----': ['percentage', '%'],
   }
 
   let timerId = -1
@@ -135,10 +158,10 @@
   }
 
   function flushInput() {
-    const char = table[inputCodes]
-    if (char) {
-      txtOutput.value += char
-      say(char)
+    const [name, char] = table[inputCodes] || []
+    if (name) {
+      writeChar(char)
+      say(name)
     } else {
       say('invalid')
     }
@@ -146,9 +169,25 @@
     showInput()
   }
 
+  function writeChar(char) {
+    switch (char) {
+    case '\b':
+      txtOutput.value = txtOutput.value.slice(0, -1)
+      break
+    case '\r':
+      // remove last line
+      txtOutput.value = txtOutput.value.replace(/.+$/, '')
+      break
+    default:
+      txtOutput.value += char
+      break
+    }
+    txtOutput.focus()
+  }
+
   const sayCache = {}
 
-  async function say(char) {
+  async function say(name) {
     const wordsLen = txtOutput.value.length
     const wordsOut = wordsLen > 12
       ? '...' + txtOutput.value.slice(-12)
@@ -156,13 +195,12 @@
 
     updateMediaMeta(`[${wordsLen}] ${wordsOut}`)
 
-    let blobUrl = sayCache[char]
+    let blobUrl = sayCache[name]
     if (!blobUrl) {
-      const fileName = char.toLowerCase()
-      const res = await fetch(`voice/${fileName}.mp4`)
+      const res = await fetch(`voice/${name}.mp4`)
       const blob = await res.blob()
       blobUrl = URL.createObjectURL(blob)
-      sayCache[char] = blobUrl
+      sayCache[name] = blobUrl
     }
 
     audioElem.onended = playBgm
@@ -253,7 +291,7 @@
       inputCodes = ''
       showInput()
       clearTimeout(timerId)
-      txtOutput.value = txtOutput.value.slice(0, -1)
+      writeChar('\b')
       say('backspace')
     })
 
@@ -274,8 +312,8 @@
     })
     debugElem.onclick = () => {
       debugBox.hidden = !debugBox.hidden
+      textUA.textContent = navigator.userAgent
     }
-    textUA.textContent = navigator.userAgent
 
     if (!navigator.mediaSession) {
       showStatus('MediaSession API is not supported')
