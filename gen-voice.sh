@@ -13,7 +13,6 @@ char_array=(
   exclamation
   full-stop
   hyphen
-  multiplication
   percentage
   plus
   quotation
