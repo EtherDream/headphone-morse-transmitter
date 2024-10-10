@@ -284,14 +284,12 @@
     navigator.mediaSession.setActionHandler('previoustrack', () => {
       if (inputCodes) {
         flushInput()
-        clearTimeout(timerId)
-        return
+      } else {
+        showInput()
+        writeChar('\b')
+        say('backspace')
       }
-      inputCodes = ''
-      showInput()
       clearTimeout(timerId)
-      writeChar('\b')
-      say('backspace')
     })
 
     if (/Macintosh.+Firefox/.test(navigator.userAgent)) {
