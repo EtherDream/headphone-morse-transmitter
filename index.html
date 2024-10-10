@@ -169,7 +169,6 @@
     audioElem.loop = false
     audioElem.autoplay = true
     audioElem.src = blobUrl
-    audioElem.play()
   }
 
   const bgmUrl = genBgm()
@@ -179,7 +178,6 @@
     audioElem.loop = true
     audioElem.autoplay = true
     audioElem.src = bgmUrl
-    audioElem.play()
   }
 
   function showStatus(msg) {
@@ -259,13 +257,13 @@
       say('backspace')
     })
 
-    if (/Firefox/.test(navigator.userAgent)) {
+    if (/Macintosh.+Firefox/.test(navigator.userAgent)) {
       navigator.mediaSession.setActionHandler('pause', () => {
         console.assert(!audioElem.paused)
         press('.')
         playBgm()
       })
-      console.log('firefox mode')
+      console.log('macos firefox mode')
     }
     updateMediaMeta('')
   }
