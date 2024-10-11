@@ -1,14 +1,18 @@
-# 耳机发送摩尔斯码
+# 🎧 摩尔斯码发送器
 
 很多耳机可以发送 ⏮️ ⏸️ ⏯️ 命令，例如 Airpods，按一下可暂停或继续，按两下可播放下一曲，按三下可播放上一曲。
 
-利用这个特征，我们可将耳机打造成一个摩尔斯码发射器！
+利用这个特征，我们可通过按耳机发送摩尔斯码！
 
 ## 在线演示
 
-[https://etherdream.github.io/headphone-morse-transmitter/](https://etherdream.github.io/headphone-morse-transmitter/)
+[https://etherdream.com/headphone-morse-transmitter/](https://etherdream.com/headphone-morse-transmitter/)
+
+运行前需关闭其他播放器，否则无法接收耳机命令。
 
 https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
+
+> 由于声音是从耳机里发出来的，因此很轻。
 
 ## 使用方式
 
@@ -43,3 +47,5 @@ https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
 ## 已知问题
 
 火狐浏览器不稳定。
+
+iPhone 目前不支持 Media Source Extensions，并且 AudioContext 和 MediaSession 会有冲突，因此最终方案只用单个 `<audio>` 播放所有声音。
