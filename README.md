@@ -1,5 +1,7 @@
 # 🎧 Morse Transmitter
 
+[中文版](README-zh.md)
+
 Many headphones can send ⏮️ ⏸️ ⏯️ commands, such as Airpods, with a single press to pause or resume, double press to play the next track, and triple press to play the previous track.
 
 Using this feature, we can use headphones as morse transmitters.
