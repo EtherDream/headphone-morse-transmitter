@@ -18,14 +18,14 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 ⏮️ = flush or backspace
 
-When ⏮️ is pressed or `delay` time is reached from the last press, the `.` and `-` codes in the input buffer will be flushed.
+When `Delay` time has passed since the last key press, `.` and `-` entered in `Input` buffer will be flush.
 
-If the input buffer is empty, pressing ⏮️ deletes the last char.
+When ⏮️ is pressed, if `Input` buffer is not empty, it will be flush immediately; otherwise, it is equivalent to the backspace key, which is used to delete the last character of `Words`.
 
 This program supports `Letter`, `Digit`, `Punctuation Mark` and `New Line` of 
 [International Morse Code](https://morsecode.world/international/morse.html).
 
-> Press the `dit` 8 times to delete the last line
+> Press `.` 8 times to delete the last line
 
 ## Keyboard
 
@@ -45,4 +45,4 @@ Firefox is unstable on MacOS and Windows.
 
 On MacOS, sometimes only one headphone can send commands (e.g. my AirPods right headphone works fine, but left headphone won't pause multiple times).
 
-On Windows, sometimes the first ~0.5s of sound will be lost (even when saved to disk and played with player software, probably a buffer issue with the Bluetooth headphone), but Chrome works fine.
+On Windows, sometimes the first ~0.5s of sound will be lost (even when saved to disk and played with player software, probably a buffer issue with the Bluetooth driver), but Chrome works fine.
