@@ -89,10 +89,13 @@ wabun_array=(
 for line in ${wabun_array[@]}; do
   word=${line%:*}
   file=${line#*:}
+
   rate=30
   if (( ${#word} > 1 )); then
     rate=180
   fi
+
+  echo "=============================="
   echo "word: [$word] file: [$file] rate: [$rate]"
 
   say "$word" -v Kyoko -r $rate -o voice/wabun/$file.aiff
