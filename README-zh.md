@@ -22,13 +22,27 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 ⏮️ = 输出 或 退格
 
-距上一次按键达到 `Delay` 毫秒时，`Input` 中输入的内容将会被输出。
+按下 ⏮️ 时，如果 `Input` 存在内容，则立即输出内容；如果 `Input` 为空，则相当于退格键，删除 `Words` 最后一个字符。
 
-按下 ⏮️ 时，如果 `Input` 不为空，则立即输出内容；否则相当于退格键，用于删除 `Words` 的最后一个字符。
+距上一次按键达到 `Delay` 毫秒时，`Input` 中的内容将会被自动输出。
 
-本程序支持 [国际摩尔斯电码](https://morsecode.world/international/morse.html) 中字母、数字、标点以及换行符。
+本程序支持 [国际码（IMC）](https://morsecode.world/international/morse.html)、[和文码 (Wabun Code)](https://en.wikipedia.org/wiki/Wabun_code) 以及部分私有特征。
 
-> 按 8 次 `.` 可删除最后一行的内容
+## 特殊功能
+
+* `<BK>`: 空格 (`-...-.-`)
+
+* `<HH>`: 清空最后行 (`.` x8)
+
+* `<DO>`: 切换到和文码 (`-...---`)
+
+* `<SN>`: 返回到国际码 (`...-.`)
+
+## 私有功能
+
+* `<LO>`: 切换到小写/平假名（`.-..---`）
+
+* `<UP>`: 切换到大写/片假名（`..-.--.`）
 
 ## 键盘操作
 

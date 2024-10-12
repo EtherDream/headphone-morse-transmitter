@@ -32,15 +32,15 @@
 <body>
 <h1>🎧 Morse Transmitter</h1>
 <div>
-  <label>⏸️</label>
+  <label id="btnAudioPause">⏸️</label>
   Pause/Play: · (dit)
 </div>
 <div>
-  <label>⏯️</label>
+  <label id="btnAudioNext">⏯️</label>
   Next track: ─ (dah)
 </div>
 <div>
-  <label>⏮️</label>
+  <label id="btnAudioPrev">⏮️</label>
   Prev track: ← (flush or backspace)
 </div>
 <div>
@@ -56,13 +56,15 @@
   Words:
 </div>
 <div>
-  <textarea id="txtOutput"></textarea>
+  <textarea id="txtOutput" inputmode="none"></textarea>
 </div>
 <div id="txtStatus"></div>
 <div>
   <p>
     <label>💡</label>
-    <a href="https://morsecode.world/international/morse.html">International Morse Code</a>
+    <a href="https://morsecode.world/international/morse.html">International Code</a>
+    /
+    <a href="https://en.wikipedia.org/wiki/Wabun_code">Wabun Code</a>
   </p>
   <p class="example">
     <label>🧪</label>
@@ -77,6 +79,21 @@
     <span class="R">.-.</span>
     <span class="L">.-..</span>
     <span class="D">-..</span>
+    <span class="CM">-.-.--</span>
+  </p>  
+  <p class="example">
+    <label>🌸</label>
+    <span class="do">-..---</span>
+    <span class="lo">.-..---</span>
+    <span class="ya">.--</span>
+    <span class="a">--.--</span>
+    <span class="dakuten">.-.-.-</span>
+    <span class="up">..-.--.</span>
+    <span class="mo">-..-.</span>
+    <span class="choonpu">.--.-</span>
+    <span class="ru">-.--.</span>
+    <span class="su">---.-</span>
+    <span class="fullstop">.-.-..</span>
   </p>
 </div>
 <div>
@@ -89,46 +106,45 @@
   </div>
 </div>
 <script>
-  const table = {
-    '.-':    ['a', 'A'],
-    '-...':  ['b', 'B'],
-    '-.-.':  ['c', 'C'],
-    '-..':   ['d', 'D'],
-    '.':     ['e', 'E'],
-    '..-.':  ['f', 'F'],
-    '--.':   ['g', 'G'],
-    '....':  ['h', 'H'],
-    '..':    ['i', 'I'],
-    '.---':  ['j', 'J'],
-    '-.-':   ['k', 'K'],
-    '.-..':  ['l', 'L'],
-    '--':    ['m', 'M'],
-    '-.':    ['n', 'N'],
-    '---':   ['o', 'O'],
-    '.--.':  ['p', 'P'],
-    '--.-':  ['q', 'Q'],
-    '.-.':   ['r', 'R'],
-    '...':   ['s', 'S'],
-    '-':     ['t', 'T'],
-    '..-':   ['u', 'U'],
-    '...-':  ['v', 'V'],
-    '.--':   ['w', 'W'],
-    '-..-':  ['x', 'X'],
-    '-.--':  ['y', 'Y'],
-    '--..':  ['z', 'Z'],
-    '.----': ['1', '1'],
-    '..---': ['2', '2'],
-    '...--': ['3', '3'],
-    '....-': ['4', '4'],
-    '.....': ['5', '5'],
-    '-....': ['6', '6'],
-    '--...': ['7', '7'],
-    '---..': ['8', '8'],
-    '----.': ['9', '9'],
-    '-----': ['0', '0'],
+  const TABLE_IMC = {
+    '.-':       ['a', 'A'],
+    '-...':     ['b', 'B'],
+    '-.-.':     ['c', 'C'],
+    '-..':      ['d', 'D'],
+    '.':        ['e', 'E'],
+    '..-.':     ['f', 'F'],
+    '--.':      ['g', 'G'],
+    '....':     ['h', 'H'],
+    '..':       ['i', 'I'],
+    '.---':     ['j', 'J'],
+    '-.-':      ['k', 'K'],
+    '.-..':     ['l', 'L'],
+    '--':       ['m', 'M'],
+    '-.':       ['n', 'N'],
+    '---':      ['o', 'O'],
+    '.--.':     ['p', 'P'],
+    '--.-':     ['q', 'Q'],
+    '.-.':      ['r', 'R'],
+    '...':      ['s', 'S'],
+    '-':        ['t', 'T'],
+    '..-':      ['u', 'U'],
+    '...-':     ['v', 'V'],
+    '.--':      ['w', 'W'],
+    '-..-':     ['x', 'X'],
+    '-.--':     ['y', 'Y'],
+    '--..':     ['z', 'Z'],
+    '.----':    ['1', '1'],
+    '..---':    ['2', '2'],
+    '...--':    ['3', '3'],
+    '....-':    ['4', '4'],
+    '.....':    ['5', '5'],
+    '-....':    ['6', '6'],
+    '--...':    ['7', '7'],
+    '---..':    ['8', '8'],
+    '----.':    ['9', '9'],
+    '-----':    ['0', '0'],
 
-    '.-.-':     ['new-line',        '\n'],
-    '........': ['error',           '\r'],
+    '------..-.-----': ['percentage', '%'],
 
     '.-...':    ['ampersand',       '&'],
     '.----.':   ['apostrophe',      "'"],
@@ -146,8 +162,97 @@
     '..--..':   ['question',        '?'],
     '-..-.':    ['slash',           '/'],
 
-    '------..-.-----': ['percentage', '%'],
+    '-...-.-':  ['break',           ' '],
+    '.-.-':     ['new-line',        '\n'],
+    '........': ['error',           '\r'],
+    // <LO>
+    '.-..---':  ['lower-case',      '\x0E'],
+    // <UP>
+    '..-.--.':  ['upper-case',      '\x0F'],
+    // <DO> Change to wabun code
+    '-..---':   ['wabun',           '\t1'],
   }
+
+  // https://en.wikipedia.org/wiki/Wabun_code
+  const TABLE_WABUN = {
+    '--.--':    ['a',   'ア', 'あ'],
+    '.-':       ['i',   'イ', 'い'],
+    '..-':      ['u',   'ウ', 'う'],
+    '-.---':    ['e',   'エ', 'え'],
+    '.-...':    ['o',   'オ', 'お'],
+
+    '.-..':     ['ka',  'カ', 'か'],
+    '-.-..':    ['ki',  'キ', 'き'],
+    '...-':     ['ku',  'ク', 'く'],
+    '-.--':     ['ke',  'ケ', 'け'],
+    '----':     ['ko',  'コ', 'こ'],
+
+    '-.-.-':    ['sa',  'サ', 'さ'],
+    '--.-.':    ['shi', 'シ', 'し'],
+    '---.-':    ['su',  'ス', 'す'],
+    '.---.':    ['se',  'セ', 'せ'],
+    '---.':     ['so',  'ソ', 'そ'],
+
+    '-.':       ['ta',  'タ', 'た'],
+    '..-.':     ['chi', 'チ', 'ち'],
+    '.--.':     ['tsu', 'ツ', 'つ'],
+    '.-.--':    ['te',  'テ', 'て'],
+    '..-..':    ['to',  'ト', 'と'],
+
+    '.-.':      ['na',  'ナ', 'な'],
+    '-.-.':     ['ni',  'ニ', 'に'],
+    '....':     ['nu',  'ヌ', 'ぬ'],
+    '--.-':     ['ne',  'ネ', 'ね'],
+    '..--':     ['no',  'ノ', 'の'],
+
+    '-...':     ['ha',  'ハ', 'は'],
+    '--..-':    ['hi',  'ヒ', 'ひ'],
+    '--..':     ['fu',  'フ', 'ふ'],
+    '.':        ['he',  'ヘ', 'へ'],
+    '-..':      ['ho',  'ホ', 'ほ'],
+
+    '-..-':     ['ma',  'マ', 'ま'],
+    '..-.-':    ['mi',  'ミ', 'み'],
+    '-':        ['mu',  'ム', 'む'],
+    '-...-':    ['me',  'メ', 'め'],
+    '-..-.':    ['mo',  'モ', 'も'],
+
+    '.--':      ['ya',  'ヤ', 'や'],
+    '-..--':    ['yu',  'ユ', 'ゆ'],
+    '--':       ['yo',  'ヨ', 'よ'],
+
+    '...':      ['ra',  'ラ', 'ら'],
+    '--.':      ['ri',  'リ', 'り'],
+    '-.--.':    ['ru',  'ル', 'る'],
+    '---':      ['re',  'レ', 'れ'],
+    '.-.-':     ['ro',  'ロ', 'ろ'],
+
+    '-.-':      ['wa',  'ワ', 'わ'],
+    '.-..-':    ['wi',  'ヰ', 'ゐ'],
+    '.--..':    ['we',  'ヱ', 'ゑ'],
+    '.---':     ['wo',  'ヲ', 'を'],
+    '.-.-.':    ['n',   'ン', 'ん'],
+
+    '..':       ['dakuten',       '゛'],
+    '..--.':    ['handakuten',    '゜'],
+    '.--.-':    ['choonpu',       'ー'],
+    '.-.-.-':   ['toten',         '、'],
+    '.-.-..':   ['kuten',         '。'],
+    '-.--.-':   ['hidari-kakko',  '（'],
+    '.-..-.':   ['migi-kakko',    '）'],
+    // <LO>
+    '.-..---':  ['hiragana',      '\x0E'],
+    // <UP>
+    '..-.--.':  ['katakana',      '\x0F'],
+    // <SN> Return to International Code
+    '...-.':    ['imc',           '\t0'],
+  }
+
+  TABLE_IMC.voicePath = ''
+  TABLE_WABUN.voicePath = 'wabun/'
+
+  let table = TABLE_IMC
+  let isUpperCase = true
 
   let timerId = -1
   let inputCodes = ''
@@ -157,10 +262,13 @@
   }
 
   function flushInput() {
-    const [name, char] = table[inputCodes] || []
+    const [name, upper, lower] = table[inputCodes] || []
     if (name) {
+      const char = isUpperCase
+        ? upper
+        : (lower || upper.toLowerCase())
       writeChar(char)
-      say(name)
+      say(table.voicePath + name)
     } else {
       say('invalid')
     }
@@ -177,29 +285,49 @@
       // remove last line
       txtOutput.value = txtOutput.value.replace(/.+$/, '')
       break
+    case '\x0E':
+      isUpperCase = false
+      break;
+    case '\x0F':
+      isUpperCase = true
+      break;
+    case '\t0':
+      table = TABLE_IMC
+      break
+    case '\t1':
+      table = TABLE_WABUN
+      break
     default:
       txtOutput.value += char
       break
     }
     txtOutput.focus()
-  }
 
-  const sayCache = {}
-
-  async function say(name) {
     const wordsLen = txtOutput.value.length
     const wordsOut = wordsLen > 12
       ? '...' + txtOutput.value.slice(-12)
       : txtOutput.value
 
     updateMediaMeta(`[${wordsLen}] ${wordsOut}`)
+  }
 
-    let blobUrl = sayCache[name]
+  const sayCache = {}
+
+  async function say(fileName) {
+    let blobUrl = sayCache[fileName]
     if (!blobUrl) {
-      const res = await fetch(`voice/${name}.mp4`)
-      const blob = await res.blob()
+      let blob
+      try {
+        const res = await fetch(`voice/${fileName}.mp4`)
+        blob = await res.blob()
+      } catch {
+      }
+      if (!blob?.size) {
+        console.warn('failed to load:', fileName)
+        return
+      }
       blobUrl = URL.createObjectURL(blob)
-      sayCache[name] = blobUrl
+      sayCache[fileName] = blobUrl
     }
 
     audioElem.onended = playBgm
@@ -270,27 +398,31 @@
     navigator.mediaSession.metadata.artist = words
   }
 
+  function onAduioPrev() {
+    if (inputCodes) {
+      flushInput()
+    } else {
+      showInput()
+      writeChar('\b')
+      say('backspace')
+    }
+    clearTimeout(timerId)
+  }
+  function onAudioPause() {
+    press('.')
+  }
+  function onAudioTrack() {
+    press('-')
+  }
+
   function init() {
     playBgm()
     showStatus('input ready')
     showInput()
 
-    navigator.mediaSession.setActionHandler('pause', () => {
-      press('.')
-    })
-    navigator.mediaSession.setActionHandler('nexttrack', () => {
-      press('-')
-    })
-    navigator.mediaSession.setActionHandler('previoustrack', () => {
-      if (inputCodes) {
-        flushInput()
-      } else {
-        showInput()
-        writeChar('\b')
-        say('backspace')
-      }
-      clearTimeout(timerId)
-    })
+    navigator.mediaSession.setActionHandler('previoustrack', onAduioPrev)
+    navigator.mediaSession.setActionHandler('pause', onAudioPause)
+    navigator.mediaSession.setActionHandler('nexttrack', onAudioTrack)
 
     if (/Macintosh.+Firefox/.test(navigator.userAgent)) {
       navigator.mediaSession.setActionHandler('pause', () => {
@@ -311,6 +443,9 @@
       debugBox.hidden = !debugBox.hidden
       textUA.textContent = navigator.userAgent
     }
+    btnAudioPrev.onclick = onAduioPrev
+    btnAudioPause.onclick = onAudioPause
+    btnAudioNext.onclick = onAudioTrack
 
     if (!navigator.mediaSession) {
       showStatus('MediaSession API is not supported')

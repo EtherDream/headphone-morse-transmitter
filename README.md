@@ -20,14 +20,27 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 ⏮️ = flush or backspace
 
-When `Delay` time has passed since the last key press, `.` and `-` entered in `Input` buffer will be flush.
-
 When ⏮️ is pressed, if `Input` buffer is not empty, it will be flush immediately; otherwise, it is equivalent to the backspace key, which is used to delete the last character of `Words`.
 
-This program supports `Letter`, `Digit`, `Punctuation Mark` and `New Line` of 
-[International Morse Code](https://morsecode.world/international/morse.html).
+When `Delay` time has passed since the last key press, `.` and `-` entered in `Input` buffer will be flush automatically.
 
-> Press `.` 8 times to delete the last line
+This program supports [International Morse Code](https://morsecode.world/international/morse.html), [Wabun Code](https://en.wikipedia.org/wiki/Wabun_code) and some private features.
+
+## Special Feature
+
+* `<BK>`: Add a space (`-...-.-`)
+
+* `<HH>`: delete the last line (`.` x8)
+
+* `<DO>`: Change to Wabun Code (`-...---`)
+
+* `<SN>`: Return to International Code (`...-.`)
+
+## Private Features
+
+* `<LO>`: Switch to lowercase/hiragana (`.-..---`)
+
+* `<UP>`: Switch to uppercase/katakana (`..-.--.`)
 
 ## Keyboard
 
@@ -37,7 +50,7 @@ https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
 
 Alternatively, you can click ⏮️ ⏸️ ⏯️ buttons in the media control popup.
 
-## Tips
+## Blind Mode
 
 This program can run in the background, even if the browser is minimized or the screen is locked. So you can use this program on your phone to practice Morse code, using only your fingers and ears, without eyes!
 
