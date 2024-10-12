@@ -411,7 +411,7 @@
   function onAudioPause() {
     press('.')
   }
-  function onAudioTrack() {
+  function onAudioNext() {
     press('-')
   }
 
@@ -422,7 +422,7 @@
 
     navigator.mediaSession.setActionHandler('previoustrack', onAduioPrev)
     navigator.mediaSession.setActionHandler('pause', onAudioPause)
-    navigator.mediaSession.setActionHandler('nexttrack', onAudioTrack)
+    navigator.mediaSession.setActionHandler('nexttrack', onAudioNext)
 
     if (/Macintosh.+Firefox/.test(navigator.userAgent)) {
       navigator.mediaSession.setActionHandler('pause', () => {
@@ -445,7 +445,7 @@
     }
     btnAudioPrev.onclick = onAduioPrev
     btnAudioPause.onclick = onAudioPause
-    btnAudioNext.onclick = onAudioTrack
+    btnAudioNext.onclick = onAudioNext
 
     if (!navigator.mediaSession) {
       showStatus('MediaSession API is not supported')
