@@ -30,6 +30,8 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 ## 特殊功能
 
+* `<AA>`: 换行 (`.-.-`)
+
 * `<BK>`: 空格 (`-...-.-`)
 
 * `<HH>`: 清空最后行 (`.` x8)

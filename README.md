@@ -28,6 +28,8 @@ This program supports [International Morse Code](https://morsecode.world/interna
 
 ## Special Feature
 
+* `<AA>`: New line (`.-.-`)
+
 * `<BK>`: Add a space (`-...-.-`)
 
 * `<HH>`: Delete the last line (`.` x8)
@@ -36,7 +38,7 @@ This program supports [International Morse Code](https://morsecode.world/interna
 
 * `<SN>`: Return to International Code (`...-.`)
 
-## Private Features
+## Private Feature
 
 * `<LO>`: Change to lowercase/hiragana (`.-..---`)
 
