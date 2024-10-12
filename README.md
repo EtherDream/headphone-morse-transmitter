@@ -10,7 +10,11 @@ Using this feature, we can use headphones as morse transmitters.
 
 [https://etherdream.github.io/headphone-morse-transmitter/](https://etherdream.github.io/headphone-morse-transmitter/)
 
+Please close other players, otherwise this page cannot receive headphone commands.
+
 https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
+
+> The sound in this video comes from headphones, so it's very light.
 
 ## Usage
 
@@ -34,7 +38,7 @@ This program supports [International Morse Code](https://morsecode.world/interna
 
 * `<HH>`: Delete the last line (`.` x8)
 
-* `<DO>`: Change to Wabun Code (`-...---`)
+* `<DO>`: Change to Wabun Code (`-..---`)
 
 * `<SN>`: Return to International Code (`...-.`)
 

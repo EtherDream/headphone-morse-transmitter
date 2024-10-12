@@ -36,7 +36,7 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 * `<HH>`: 清空最后行 (`.` x8)
 
-* `<DO>`: 切换到和文码 (`-...---`)
+* `<DO>`: 切换到和文码 (`-..---`)
 
 * `<SN>`: 返回到国际码 (`...-.`)
 
