@@ -60,6 +60,8 @@ https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
 
 因此你可以在手机上打开该网页，锁屏后盲发摩尔斯电码。只需按耳机，听反馈，无需看屏幕。
 
+<img height="693" src="https://github.com/user-attachments/assets/3d9779e6-1e29-4c59-9a7e-13538f691895">
+
 ## 已知问题
 
 火狐浏览器不稳定。
