@@ -395,7 +395,17 @@
   }
 
   function updateMediaMeta(words) {
-    navigator.mediaSession.metadata.artist = words
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Morse Code',
+      artist: words,
+      artwork: [
+        {
+          src: 'logo.webp',
+          sizes: '128x128',
+          type: 'image/webp',
+        },
+      ]
+    })
   }
 
   function onAduioPrev() {
@@ -451,16 +461,7 @@
       showStatus('MediaSession API is not supported')
       return
     }
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'Morse Code',
-      artwork: [
-        {
-          src: 'logo.webp',
-          sizes: '128x128',
-          type: 'image/webp',
-        },
-      ]
-    })
+    updateMediaMeta('')
     window.addEventListener('pointerdown', init, {once: true})
     showStatus('click anywhere to start')
   }
