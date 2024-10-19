@@ -26,7 +26,7 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 When ⏮️ is pressed, if `Input` buffer is not empty, it will be flush immediately; otherwise, it is equivalent to the backspace key, which is used to delete the last character of `Words`.
 
-When `Delay` time has passed since the last key press, `.` and `-` entered in `Input` buffer will be flush automatically.
+When `Delay` time has passed since the last key press, `Input` buffer will be flush automatically.
 
 This program supports [International Morse Code](https://morsecode.world/international/morse.html), [Wabun Code](https://en.wikipedia.org/wiki/Wabun_code) and some private features.
 
@@ -56,11 +56,11 @@ https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
 
 Alternatively, you can click ⏮️ ⏸️ ⏯️ buttons in the media control popup.
 
-https://github.com/user-attachments/assets/4fd3d899-7153-4029-8643-4775c699265e
-
 ## Blind Mode
 
 This program can run in the background, even if the browser is minimized or the screen is locked. So you can use this program on your phone to practice Morse code, using only your fingers and ears, without eyes!
+
+https://github.com/user-attachments/assets/4fd3d899-7153-4029-8643-4775c699265e
 
 ## Known Issues
 
