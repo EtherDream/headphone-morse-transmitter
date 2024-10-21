@@ -46,7 +46,7 @@ This program supports [International Morse Code](https://morsecode.world/interna
 
 * `<UP>`: Change to uppercase/katakana (`..-.--.`)
 
-* `<SP>`: Add a space (`....-..`)
+* `<SP>`: Add a space (`....--.`)
 
 * `<X>` + kana = small kana (`-..- ?`) 
 
