@@ -48,6 +48,10 @@ This program supports [International Morse Code](https://morsecode.world/interna
 
 * `<UP>`: Change to uppercase/katakana (`..-.--.`)
 
+* `<X>` + kana = small kana (`-..- ?`) 
+
+  Supports `っ ゃゅょ ぁぃぅぇぉ` and the corresponding katakana.
+
 ## Keyboard
 
 If you don't want to use a headphone, you can also use ⏮️ ⏸️ ⏯️ keys on your keyboard, which can even set a shorter delay, such as 500ms:
