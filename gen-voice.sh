@@ -84,6 +84,8 @@ wabun_array=(
   右括弧:migi-kakko
   平仮名:hiragana
   片仮名:katakana
+  無効:invalid
+  backspace:backspace
   space:space
 )
 

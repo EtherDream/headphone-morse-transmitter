@@ -284,7 +284,7 @@
         ? upper
         : (lower || upper.toLowerCase())
       writeChar(char)
-      say(table.voicePath + name)
+      say(name)
     } else {
       say('invalid')
     }
@@ -330,20 +330,21 @@
   const sayCache = {}
 
   async function say(fileName) {
-    let blobUrl = sayCache[fileName]
+    const path = table.voicePath + fileName
+    let blobUrl = sayCache[path]
     if (!blobUrl) {
       let blob
       try {
-        const res = await fetch(`voice/${fileName}.mp4`)
+        const res = await fetch(`voice/${path}.mp4`)
         blob = await res.blob()
       } catch {
       }
       if (!blob?.size) {
-        console.warn('failed to load:', fileName)
+        console.warn('failed to load:', path)
         return
       }
       blobUrl = URL.createObjectURL(blob)
-      sayCache[fileName] = blobUrl
+      sayCache[path] = blobUrl
     }
 
     audioElem.onended = playBgm
@@ -428,7 +429,6 @@
     if (inputCodes) {
       flushInput()
     } else {
-      showInput()
       writeChar('\b')
       say('backspace')
     }
