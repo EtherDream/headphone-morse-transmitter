@@ -34,8 +34,6 @@ This program supports [International Morse Code](https://morsecode.world/interna
 
 * `<AA>`: New line (`.-.-`)
 
-* `<BK>`: Add a space (`-...-.-`)
-
 * `<HH>`: Delete the last line (`.` x8)
 
 * `<DO>`: Change to Wabun Code (`-..---`)
@@ -47,6 +45,8 @@ This program supports [International Morse Code](https://morsecode.world/interna
 * `<LO>`: Change to lowercase/hiragana (`.-..---`)
 
 * `<UP>`: Change to uppercase/katakana (`..-.--.`)
+
+* `<SP>`: Add a space (`....-..`)
 
 * `<X>` + kana = small kana (`-..- ?`) 
 

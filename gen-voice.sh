@@ -34,7 +34,7 @@ imc_array=(
   question
   slash
 
-  break
+  space
   error
   "new line"
 
@@ -84,6 +84,7 @@ wabun_array=(
   右括弧:migi-kakko
   平仮名:hiragana
   片仮名:katakana
+  space:space
 )
 
 for line in ${wabun_array[@]}; do

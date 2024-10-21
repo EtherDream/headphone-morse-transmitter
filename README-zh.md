@@ -32,8 +32,6 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 * `<AA>`: 换行 (`.-.-`)
 
-* `<BK>`: 空格 (`-...-.-`)
-
 * `<HH>`: 清空最后行 (`.` x8)
 
 * `<DO>`: 切换到和文码 (`-..---`)
@@ -45,6 +43,8 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 * `<LO>`: 切换到小写/平假名（`.-..---`）
 
 * `<UP>`: 切换到大写/片假名（`..-.--.`）
+
+* `<SP>`: 空格 (`....-..`)
 
 * `<X>` + 假名 = 小假名 (`-..- ?`) 
 
