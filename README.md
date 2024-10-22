@@ -10,7 +10,9 @@ Using this feature, we can use headphones as morse transmitters.
 
 [https://etherdream.github.io/headphone-morse-transmitter/](https://etherdream.github.io/headphone-morse-transmitter/)
 
-Please close other players, otherwise this page cannot receive headphone commands.
+Due to browser limitations, you must click anywhere to init the audio (which plays an almost silent BGM) so that the headphone command can be received.
+
+Please close the other players first, otherwise the headphone command may not be sent to this page. If the page still can't receive the headphone command, you can click `Debug` to check if the audio is playing, if not, you can play it manually.
 
 https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 

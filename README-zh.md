@@ -8,7 +8,9 @@
 
 [https://etherdream.com/headphone-morse-transmitter/](https://etherdream.com/headphone-morse-transmitter/)
 
-运行前需关闭其他播放器，否则无法接收耳机命令。
+由于浏览器限制，你必须点击任意位置才能初始化音频（播放一个几乎静音的背景音乐），从而可接受耳机命令。
+
+请先关闭其他播放器，否则耳机命令可能不会发送到本页面上。如果页面仍无法收到耳机命令，可点击 `Debug` 检测音频是否在播放，如果没有可手动播放。
 
 https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
