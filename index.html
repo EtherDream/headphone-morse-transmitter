@@ -360,6 +360,9 @@
     audioElem.loop = true
     audioElem.autoplay = true
     audioElem.src = bgmUrl
+    setTimeout(() => {
+      audioElem.play()
+    }, 100)
   }
 
   function showStatus(msg) {
