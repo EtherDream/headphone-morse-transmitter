@@ -337,9 +337,9 @@
       try {
         const res = await fetch(`voice/${path}.mp4`)
         blob = await res.blob()
-      } catch {
+      } catch (err) {
       }
-      if (!blob?.size) {
+      if (!blob || !blob.size) {
         console.warn('failed to load:', path)
         return
       }
@@ -412,6 +412,9 @@
   }
 
   function updateMediaMeta(words) {
+    if (!navigator.mediaSession) {
+      return
+    }
     navigator.mediaSession.metadata = new MediaMetadata({
       title: 'Morse Code',
       artist: words,
