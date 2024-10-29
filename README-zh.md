@@ -40,7 +40,7 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 * `<SN>`: 返回到国际码 (`...-.`)
 
-* `\d{2,4}`: 输入 2~4 个数字，输出 1 个汉字。参考 [1983年标准电码本](https://zh.wiktionary.org/wiki/Appendix:%E4%B8%AD%E6%96%87%E7%94%B5%E7%A0%81/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%861983)
+* `\d{2,4}`: 输入 2~4 个数字，输出 1 个汉字。参考 [1983年标准电码本](https://zh.wiktionary.org/wiki/Appendix:%E4%B8%AD%E6%96%87%E7%94%B5%E7%A0%81/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%861983)（前两个 0 可忽略）。
 
 ## 私有功能
 
@@ -58,9 +58,9 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 ## 键盘操作
 
-如果你不想使用耳机，也可使用键盘上的 ⏮️ ⏸️ ⏯️ 键，这样甚至可设置更短的延迟，例如 500 毫秒：
+如果你不想使用耳机，也可使用键盘上的 ⏮️ ⏸️ ⏯️ 键，这样可更快输入：
 
-https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
+https://github.com/user-attachments/assets/60bc966c-e960-4c0e-82e3-e4769613d91d
 
 此外，点击媒体控制浮层中的 ⏮️ ⏸️ ⏯️ 按钮也可以实现同样的效果。
 

@@ -63,9 +63,9 @@ This program supports [International Morse Code](https://en.wikipedia.org/wiki/M
 
 ## Keyboard
 
-If you don't want to use a headphone, you can also use ⏮️ ⏸️ ⏯️ keys on your keyboard, which can even set a shorter delay, such as 500ms:
+If you don't want to use a headphone, you can also use ⏮️ ⏸️ ⏯️ keys on your keyboard, which is actually faster:
 
-https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
+https://github.com/user-attachments/assets/60bc966c-e960-4c0e-82e3-e4769613d91d
 
 Alternatively, you can click ⏮️ ⏸️ ⏯️ buttons in the media control popup.
 
