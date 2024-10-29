@@ -3,23 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
-<title>🎧 Morse Transmitter</title>
+<title>Morse Transmitter</title>
 <base target="_blank">
 <style>
-  body, input {
+  body, input, select {
     font-family: monospace;
     font-size: 15px;
+  }
+  select {
+    width: 23em;
   }
   label {
     width: 1.2em;
     display: inline-block;
+  }
+  a {
+    text-decoration: none;
+  }
+  ul {
+    margin: 0;
+    list-style: none;
+    padding-left: 2em;
   }
   #txtDelay {
     width: 6em;
   }
   #txtOutput {
     width: 100%;
-    height: 10em;
+    height: 15em;
   }
   .example span:nth-child(even) {
     color: #900;
@@ -48,11 +59,20 @@
   Delay: <input id="txtDelay" type="number" value="1500"> ms
 </div>
 <div>
+  <label>🔉</label>
+  Voice:
+  <ul>
+    <li><select id="selectVoiceEn" data-lang="en" data-test="Hello"></select></li>
+    <li><select id="selectVoiceJa" data-lang="ja" data-test="こんにちは"></select></li>
+    <li><select id="selectVoiceZh" data-lang="zh" data-test="你好"></select></li>
+  </ul>
+</div>
+<div>
   <label>⌛️</label>
   Input: <span id="txtInput">initing...</span>
 </div>
 <div>
-  <label>📖</label>
+  <label id="btnSpeak">📖</label>
   Words:
 </div>
 <div>
@@ -61,10 +81,12 @@
 <div id="txtStatus"></div>
 <div>
   <p>
-    <label>💡</label>
-    <a href="https://morsecode.world/international/morse.html">International Code</a>
+    <label>🔗</label>
+    <a href="https://morsecode.world/international/morse.html">International Morse Code</a>
     /
-    <a href="https://en.wikipedia.org/wiki/Wabun_code">Wabun Code</a>
+    <a href="https://en.wikipedia.org/wiki/Wabun_code">和文モールス符号</a>
+    /
+    <a href="https://zh.wiktionary.org/wiki/Appendix:%E4%B8%AD%E6%96%87%E7%94%B5%E7%A0%81/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%861983">中文电码</a>
   </p>
   <p class="example">
     <label>🧪</label>
@@ -95,17 +117,51 @@
     <span title="ス">---.-</span>
     <span title="。">.-.-..</span>
   </p>
+  <p class="example">
+    <label>🧧</label>
+    <span title="中">..--- ..---</span>
+    <span title="国">----. ....- ---..</span>
+    <span title="人">---.. -....</span>
+  </p>
 </div>
 <div>
   <label>🛠️</label>
   <span id="debugElem">Debug</span>
   <div id="debugBox" hidden>
-    <audio id="audioElem" controls></audio>
+    <audio id="audioElem" loop autoplay controls></audio>
     <p id="textUA"></p>
     <p><a href="https://github.com/EtherDream/headphone-morse-transmitter">GitHub</a></p>
   </div>
 </div>
 <script>
+  const CTRL = '\t'
+  const CTRL_BACK  = CTRL + 0
+  const CTRL_SPEAK = CTRL + 1
+  const CTRL_CLEAR = CTRL + 2
+  const CTRL_UPPER = CTRL + 3
+  const CTRL_LOWER = CTRL + 4
+  const CTRL_WABUN = CTRL + 5
+  const CTRL_IMC   = CTRL + 6
+
+  const TABLE_COMMON = {
+    '.----':    ['1', '1'],
+    '..---':    ['2', '2'],
+    '...--':    ['3', '3'],
+    '....-':    ['4', '4'],
+    '.....':    ['5', '5'],
+    '-....':    ['6', '6'],
+    '--...':    ['7', '7'],
+    '---..':    ['8', '8'],
+    '----.':    ['9', '9'],
+    '-----':    ['0', '0'],
+    '........': ['clear', CTRL_CLEAR],
+    // <SP>
+    '....--.':  ['space', ' '],
+    // <SS>
+    '......':   ['', CTRL_SPEAK],
+  }
+
+  // {key: [voice, upper, lower?] }
   const TABLE_IMC = {
     '.-':       ['a', 'A'],
     '-...':     ['b', 'B'],
@@ -133,139 +189,129 @@
     '-..-':     ['x', 'X'],
     '-.--':     ['y', 'Y'],
     '--..':     ['z', 'Z'],
-    '.----':    ['1', '1'],
-    '..---':    ['2', '2'],
-    '...--':    ['3', '3'],
-    '....-':    ['4', '4'],
-    '.....':    ['5', '5'],
-    '-....':    ['6', '6'],
-    '--...':    ['7', '7'],
-    '---..':    ['8', '8'],
-    '----.':    ['9', '9'],
-    '-----':    ['0', '0'],
-
     '------..-.-----': ['percentage', '%'],
 
-    '.-...':    ['ampersand',       '&'],
-    '.----.':   ['apostrophe',      "'"],
-    '.--.-.':   ['at',              '@'],
-    '-.--.-':   ['bracket-close',   ')'],
-    '-.--.':    ['bracket-open',    '('],
-    '---...':   ['colon',           ':'],
-    '--..--':   ['comma',           ','],
-    '-...-':    ['equals',          '='],
-    '-.-.--':   ['exclamation',     '!'],
-    '.-.-.-':   ['full-stop',       '.'],
-    '-....-':   ['hyphen',          '-'],
-    '.-.-.':    ['plus',            '+'],
-    '.-..-.':   ['quotation',       '"'],
-    '..--..':   ['question',        '?'],
-    '-..-.':    ['slash',           '/'],
+    '.-...':    ['ampersand',     '&'],
+    '.----.':   ['apostrophe',    "'"],
+    '.--.-.':   ['at',            '@'],
+    '-.--.-':   ['bracket close', ')'],
+    '-.--.':    ['bracket open',  '('],
+    '---...':   ['colon',         ':'],
+    '--..--':   ['comma',         ','],
+    '-...-':    ['equals',        '='],
+    '-.-.--':   ['exclamation',   '!'],
+    '.-.-.-':   ['full stop',     '.'],
+    '-....-':   ['hyphen',        '-'],
+    '.-.-.':    ['plus',          '+'],
+    '.-..-.':   ['quotation',     '"'],
+    '..--..':   ['question',      '?'],
+    '-..-.':    ['slash',         '/'],
 
-    '.-.-':     ['new-line',        '\n'],
-    '........': ['error',           '\r'],
+    '.-.-':     ['new line',      '\n'],
 
-    // <SP>
-    '....--.':  ['space',           ' '],
     // <LO>
-    '.-..---':  ['lower-case',      '\x0E'],
+    '.-..---':  ['lower case',    CTRL_LOWER],
     // <UP>
-    '..-.--.':  ['upper-case',      '\x0F'],
+    '..-.--.':  ['upper case',    CTRL_UPPER],
     // <DO> Change to wabun code
-    '-..---':   ['wabun',           '\t1'],
+    '-..---':   ['和文',           CTRL_IMC],
+
+    ...TABLE_COMMON,
   }
 
   // https://en.wikipedia.org/wiki/Wabun_code
   const TABLE_WABUN = {
-    '--.--':    ['a',   'ア', 'あ'],
-    '.-':       ['i',   'イ', 'い'],
-    '..-':      ['u',   'ウ', 'う'],
-    '-.---':    ['e',   'エ', 'え'],
-    '.-...':    ['o',   'オ', 'お'],
+    '--.--':    ['あ', 'ア', 'あ'],
+    '.-':       ['い', 'イ', 'い'],
+    '..-':      ['う', 'ウ', 'う'],
+    '-.---':    ['え', 'エ', 'え'],
+    '.-...':    ['お', 'オ', 'お'],
 
-    '.-..':     ['ka',  'カ', 'か'],
-    '-.-..':    ['ki',  'キ', 'き'],
-    '...-':     ['ku',  'ク', 'く'],
-    '-.--':     ['ke',  'ケ', 'け'],
-    '----':     ['ko',  'コ', 'こ'],
+    '.-..':     ['か', 'カ', 'か'],
+    '-.-..':    ['き', 'キ', 'き'],
+    '...-':     ['く', 'ク', 'く'],
+    '-.--':     ['け', 'ケ', 'け'],
+    '----':     ['こ', 'コ', 'こ'],
 
-    '-.-.-':    ['sa',  'サ', 'さ'],
-    '--.-.':    ['shi', 'シ', 'し'],
-    '---.-':    ['su',  'ス', 'す'],
-    '.---.':    ['se',  'セ', 'せ'],
-    '---.':     ['so',  'ソ', 'そ'],
+    '-.-.-':    ['さ', 'サ', 'さ'],
+    '--.-.':    ['し', 'シ', 'し'],
+    '---.-':    ['す', 'ス', 'す'],
+    '.---.':    ['せ', 'セ', 'せ'],
+    '---.':     ['そ', 'ソ', 'そ'],
 
-    '-.':       ['ta',  'タ', 'た'],
-    '..-.':     ['chi', 'チ', 'ち'],
-    '.--.':     ['tsu', 'ツ', 'つ'],
-    '.-.--':    ['te',  'テ', 'て'],
-    '..-..':    ['to',  'ト', 'と'],
+    '-.':       ['た', 'タ', 'た'],
+    '..-.':     ['ち', 'チ', 'ち'],
+    '.--.':     ['つ', 'ツ', 'つ'],
+    '.-.--':    ['て', 'テ', 'て'],
+    '..-..':    ['と', 'ト', 'と'],
 
-    '.-.':      ['na',  'ナ', 'な'],
-    '-.-.':     ['ni',  'ニ', 'に'],
-    '....':     ['nu',  'ヌ', 'ぬ'],
-    '--.-':     ['ne',  'ネ', 'ね'],
-    '..--':     ['no',  'ノ', 'の'],
+    '.-.':      ['な', 'ナ', 'な'],
+    '-.-.':     ['に', 'ニ', 'に'],
+    '....':     ['ぬ', 'ヌ', 'ぬ'],
+    '--.-':     ['ね', 'ネ', 'ね'],
+    '..--':     ['の', 'ノ', 'の'],
 
-    '-...':     ['ha',  'ハ', 'は'],
-    '--..-':    ['hi',  'ヒ', 'ひ'],
-    '--..':     ['fu',  'フ', 'ふ'],
-    '.':        ['he',  'ヘ', 'へ'],
-    '-..':      ['ho',  'ホ', 'ほ'],
+    '-...':     ['は', 'ハ', 'は'],
+    '--..-':    ['ひ', 'ヒ', 'ひ'],
+    '--..':     ['ふ', 'フ', 'ふ'],
+    '.':        ['へ', 'ヘ', 'へ'],
+    '-..':      ['ほ', 'ホ', 'ほ'],
 
-    '-..-':     ['ma',  'マ', 'ま'],
-    '..-.-':    ['mi',  'ミ', 'み'],
-    '-':        ['mu',  'ム', 'む'],
-    '-...-':    ['me',  'メ', 'め'],
-    '-..-.':    ['mo',  'モ', 'も'],
+    '-..-':     ['ま', 'マ', 'ま'],
+    '..-.-':    ['み', 'ミ', 'み'],
+    '-':        ['む', 'ム', 'む'],
+    '-...-':    ['め', 'メ', 'め'],
+    '-..-.':    ['も', 'モ', 'も'],
 
-    '.--':      ['ya',  'ヤ', 'や'],
-    '-..--':    ['yu',  'ユ', 'ゆ'],
-    '--':       ['yo',  'ヨ', 'よ'],
+    '.--':      ['や', 'ヤ', 'や'],
+    '-..--':    ['ゆ', 'ユ', 'ゆ'],
+    '--':       ['よ', 'ヨ', 'よ'],
 
-    '...':      ['ra',  'ラ', 'ら'],
-    '--.':      ['ri',  'リ', 'り'],
-    '-.--.':    ['ru',  'ル', 'る'],
-    '---':      ['re',  'レ', 'れ'],
-    '.-.-':     ['ro',  'ロ', 'ろ'],
+    '...':      ['ら', 'ラ', 'ら'],
+    '--.':      ['り', 'リ', 'り'],
+    '-.--.':    ['る', 'ル', 'る'],
+    '---':      ['れ', 'レ', 'れ'],
+    '.-.-':     ['ろ', 'ロ', 'ろ'],
 
-    '-.-':      ['wa',  'ワ', 'わ'],
-    '.-..-':    ['wi',  'ヰ', 'ゐ'],
-    '.--..':    ['we',  'ヱ', 'ゑ'],
-    '.---':     ['wo',  'ヲ', 'を'],
-    '.-.-.':    ['n',   'ン', 'ん'],
+    '-.-':      ['わ', 'ワ', 'わ'],
+    '.-..-':    ['ゐ', 'ヰ', 'ゐ'],
+    '.--..':    ['ゑ', 'ヱ', 'ゑ'],
+    '.---':     ['を', 'ヲ', 'を'],
+    '.-.-.':    ['ん', 'ン', 'ん'],
 
     // <X?> Small form
-    '-..-.--.':   ['tsu', 'ッ', 'っ'],
-    '-..-.--':    ['ya',  'ャ', 'ゃ'],
-    '-..--..--':  ['yu',  'ュ', 'ゅ'],
-    '-..---':     ['yo',  'ョ', 'ょ'],
-    '-..---.--':  ['a',   'ァ', 'ぁ'],
-    '-..-.-':     ['i',   'ィ', 'ぃ'],
-    '-..-..-':    ['u',   'ゥ', 'ぅ'],
-    '-..--.---':  ['e',   'ェ', 'ぇ'],
-    '-..-.-...':  ['o',   'ォ', 'ぉ'],
+    '-..-.--.':   ['つ', 'ッ', 'っ'],
+    '-..-.--':    ['や', 'ャ', 'ゃ'],
+    '-..--..--':  ['ゆ', 'ュ', 'ゅ'],
+    '-..---':     ['よ', 'ョ', 'ょ'],
+    '-..---.--':  ['あ', 'ァ', 'ぁ'],
+    '-..-.-':     ['い', 'ィ', 'ぃ'],
+    '-..-..-':    ['う', 'ゥ', 'ぅ'],
+    '-..--.---':  ['え', 'ェ', 'ぇ'],
+    '-..-.-...':  ['お', 'ォ', 'ぉ'],
+    '-..-.-...':  ['か', 'ヵ', 'ゕ'],
+    '-..-.-...':  ['け', 'ヶ', 'ゖ'],
 
-    '..':       ['dakuten',       '゛'],
-    '..--.':    ['handakuten',    '゜'],
-    '.--.-':    ['choonpu',       'ー'],
-    '.-.-.-':   ['toten',         '、'],
-    '.-.-..':   ['kuten',         '。'],
-    '-.--.-':   ['hidari-kakko',  '（'],
-    '.-..-.':   ['migi-kakko',    '）'],
+    '..':       ['濁点',    '゛'],
+    '..--.':    ['半 濁点', '゜'],
+    '.--.-':    ['長音符',  'ー'],
+    '.-.-.-':   ['読点',    '、'],
+    '.-.-..':   ['句点',    '。'],
+    '-.--.-':   ['左括弧',  '（'],
+    '.-..-.':   ['右括弧',  '）'],
 
-    // <SP>
-    '....--.':  ['space',          ' '],
     // <LO>
-    '.-..---':  ['hiragana',      '\x0E'],
+    '.-..---':  ['平仮名',  CTRL_LOWER],
     // <UP>
-    '..-.--.':  ['katakana',      '\x0F'],
+    '..-.--.':  ['片仮名',  CTRL_UPPER],
     // <SN> Return to International Code
-    '...-.':    ['imc',           '\t0'],
+    '...-.':    ['International', CTRL_WABUN],
+
+    ...TABLE_COMMON,
   }
 
-  TABLE_IMC.voicePath = ''
-  TABLE_WABUN.voicePath = 'wabun/'
+  // https://en.wiktionary.org/wiki/Appendix:Chinese_telegraph_code/Mainland_1983
+  const CHINESE_CHARS = '~一丁七丈三上下不丐丑且丕世丙丞丢並丏丨个丫中丰~串锕丶锿丸丹主砹丿乂乃久之乍乎乏乖乘桉乙乜九乞也~乳乾乱凼亅了予事苯二于云互五井~~些亚亟吡亠亡亢交亥亦亨享京亭亮亳亶~醭人什仁仃仄仆仇今介仍佣佬仔仕他仗付仙仝仞仡仟代令以仰仲仳仵件价任份仿企伉伊伋伍伎伏伐休伙伯估你伴伶伸伺伻似倮佃但~位低住佐佑~何佗余佘佚佛作佞佟佺~佩伢佯佳~佶佝佻佾使侃来侈例侍侏侑侔仑侗供依~伕佰侮侯侵侣便~促俄俊俎俏俐俑俗俘俚佡保俟侠俞俫信修俶伥働倌倬俯俱俳俵俸俺俾仓~倍俩倏们倒~倘候倚倜~借倡~值倥倦倨倩倪伦倭偈偎傻~偃假伟偏偕做停健~侧侦偶仫偷伧傀傅傍傑傒傈伞备~~~催~傲传伛债伤倾偻仅~佥僳像~~僦偾~侨~僖僚伪侥僧僭僮~僵~僻~仪侬亿儆侩俭傤~僰儋儇傧儒俦侪~~~偿优储~俪傥俨~儿兀允元兄充兆先光~克兑免兔~兕兖兜兢~入内全两~钚八公六兮共兵其具典兼冀糍冂冉册再冏冇~冒冕镩冖冗~冠冢冤冥幂耖冫冬冰冲冱冶冷冮冽况凄准净凉冼凋凌冻~凑~凛凝决几凡凭凯凳凰茌凵凶凸凹~出函菪刀刁刃分切刈刊刎刑划刖列刨初删判别~利剁刮到刲刳~制刷券刹刺~剃刭则~削刻前剜剌剡剔剖刬刚剥剩剪剐副割剀创~剽剿~~~剧劈刘刽~剑剂劓劘~剅力功加劣助努劫劬劭効劻劾劼劲勃勐勇勉勍勒动勖勘务胜劳~募势~勤~勚勰勳劢励勷劝锝勹勺匀勿~包匈匊匍匏匐勾匕化北匙碲匚匜匝~匠匡匣匪汇匮匦~~啶匸匹匾匿区铥十千廿卅升午卉半卑卒卓协南博~卜卞占卡卣卦氡卩~~卯印危~却卵卷卸卺~卮即~卿胨厂厄~~~厘厍厚厝原厕厥~厌厮厉厦胴厶~去叁参~塅又叉及友反叔取受叙叛叟~丛叠口古句另叨叩只叫召叭叮叱可台史右叵叶司吁吃各合吉吊同名后吏吐向吓~君吝吞吟吠否吩咐吆含吭吮呈吴吵呐吸吹告吻吼吾呀吕呃呆咂呢呦呋周咒吧呱~味呵呶呷呻呼命咀咄咆咕和咎咏咋咖哎咤响咪咧咨咫咬咯咱咳~咸~咽哀品哂哄啊哇哈哉哪咿员哥唔哦哩哭哮哲哺哼哽哿唁唆~唉唐唇哨啦唏售唯唱唳唾啁~啄商问启啖啥啜哑唬啤啡啻啼喁喀喂喃善喆喇喈喉喊喏~喋喑喘喙唤喜喝唧喧喻丧乔单啾喹嗅吗啬嗑嗓嗔呜嗪嗜嗟嗣嗤喔喟哟~嗡呛嗉嗒喽~叹嘈嘉嘏嘛唛~啧尝嘘噻嚎嘎呕嗷嗽嗾嘬哗哔叽啸嘲嘴哓嘶嗥嘹嘻嘿~噌噍噎噢~噤器噩噪噫噬嗳哙喷噶哝哕吨噱咛嚅~嚏啮嚚~冁~~~~严咙嘤嚼啭嗫嚣嚷~囊呓嘱~叻囗回囚四囱因囤困囫囷囹固囿圃圄圈圉国~囵圐圙围园圆图团圜~土在圩圬圭圮地圻址圾坟均坊坍坎坏坐坑坂坌坡坤坦坭坩坷坼垂坪坫坰坳型垓坬垠垢垣垃坯垛坨埃埋城埒垮埏域埠垧埭垡执培基堂坚堆垩埤埴埵埸堃堙堞堡堠堤堪尧报埔场堵埝堰垾塍块茔塌塑塔墓塚~塘塞填坞垲埙埘堼坝尘堑~塾塂墀墁境墅墉垫墄埫~坠~增墟墨墩堕~~塄塆墈垦壁壅坛~~壑压壕~垒圹~垄垆~壤~圳士壬壮壹壶~寿壸椴夂夆簖夊夏砘~跺夕外夙多夜够梦夤夥婀大夭天太夫夬央失夯夷夸夹奄奇奈奉奎奏奂契奔奕奓套奚锇奘奠~奢奥奁夺奖奭奋奀女奴奶奸好妁如妃妄妊妒妍妓妖妗妙妆妣妤妥妨妯妹妻妾姆姊始姗姐姑姒姓妲妮委姚姜姝~~姣~姥姨~侄姬~姻娃姿威娉姮~娌娑娘娱娜娟娠娣娥娩娓娼姹娶娄婆婉婊婕婚婢~妇婪娅她妳婼婷婺媒媚媛~~娲~~媖媳媵媸媪妈媾~嫁嫂嫄嫉~嫌媲~嫖妪嫠嫡嫣嫦嫩嫪嫘嫚嫜嫫~妫娆嬉婵娇媭嬖嬗嫱嬛嬴嫔嬷~嬲~婴婶孀~娈妞子孑孔孕孓字存孚孛孜孝孟季孤孥孩孙孰孱孳学孺~孪孵宀宁它宄~宅宇守安宋完宏宓宕宗官宙定宛宜客宣室宥宦宬宫宰害宴宵家宸容~~宿~寂~寄寅密寇~富寐寒寓~~~~寞察寡寝寤寥实寨~~审写宽寮寰宠宝宧寸寺封射尅将专尉尊寻对导蒽小少尔尖尚~~尕尢尤~尪就尰尴尬铒尸尹尺尻尼尾尿局屁居届屈屉屋~屎屐屑展屏屝屠屡屣层履~屦~属~砩屮屯岳山屹屺峁岌岐岑岔峿冈岢岈岩岫岱岵岷岸岣峒峙峋峨峭峰岛峻峡峓岘峪崃崇崎岽崑崔崖崙岗崛峥崩崚崧崦嵇崆嵋嵫嵊嵌峧嵎岚崀崅嵩嵝嵬嵯崌嶂崭岖嶒嵚嵘峤崤峄嶙嶷岭屿崾巉嵛巍峦嶅巅巖崂巛川州巡巢镄工左巧巨巫差酚己巳已巴~巷巽钆巾币市布帆帋帑帕希帖帗帘帙帚帛帔帝帡~帅师席帨帐带帷常帽帏幄幅帧~幌幔幕帼帻帜幡幢~幪帮帱~~~幛干平年并幸~矸幺幻幼幽~酐广庀庹庇床庋序底庖店庚府庠庥度座库庭~庵庶康庸庾~~~厢~廑廈廉廊廋厩廓廖厨~~廛庙~庑废~廨廪庐~厅庞锆廴延廷~建~~廾~弁弄~弈弊茛弋弍式弑瀔弓~引弗弛弟弢~弦弧弩~~弭弱~张~强~弼彀弹~弥弯弘彐彖彗彘~彝彟臌彡形彤彦彧彩彪~彬彭彰影彨铪彳彷役彼~往征徂待徇很徉徊律~徐径徒得徘徙徜从徕御~徨复循徬徭微徯徵德彻徼徽焓心必忉忌忍忒忖志忘忐忑忙忝忠忡恬快忭忮念忱忸忤忻忽忿怍怎怏怒怕怖怗怙怛思怠怡急怦性怨怩怪怫怯~怵~您怔恁恂恃恒惦~恍恐恕恙恚恝恢恣恤~恧恨恩恪恫恭息恰悃~悄悦悌悍悒悔悖悚悉悛悝悮悟悠患~~悱~悲悴怅闷悸悻悼~~~情惆惇~惑惓惕惘惙惚~惜~惟惠恶悰惋惰恼恽想惴惶~惹惺恻愀愁愆愈愉~愍愎意~愔愕愚爱惬感愠愧悫愫~怆恺慎忾愿恿~~~慈慊态慌~慓慕惨~慝惭恸慢惯~慧慨怂虑慰悭~慵庆慷~~~忧~惫怜~憔惮憎憝愤憧憨憩憬悯怃~宪~忆~憾~~懂恳懈应懊懋怿懔~愦~~~怼懑~懦惩懿懵懒怀悬忏惧~慑恋恹戆~戈戊戌戍戎成我戒戋戕或戚戛戟戢戥戡~戬截戳戮战戏戴戤户戾房所戽扁扃~扆扇扈扉~槲手才扎扑扒打扔托扛扠拤~扣扭扮扯~扳扶批抵扼找承技~抄~抉把抑抒抓~投抖抗折抨披抬抱抿抹押抽拂拄拆拇担拈拉拊抛拌拍~拐拎拒拓拔~拖拗拘拙拚招拜捂拮拭括拱拯拳拴拷拽拾拿持挂指挈按挎挑挖拼挨挪挫振捅挹挺挼挽挟~捆捉捋捌捍掂捐挣捕挲捎捧~捩扪捺捭据~捱~捶捷揍捻~掀扫掇授掉掊掌掏掎掐排掖掘~掠~探掣接控推掩措掬掯抡~~~拣揄揆揉描捏提插揖扬换~揠搽握揣揩揪揭挥~援~掾搞~搧~~~损搏搒搓搔摇捣搜搠~~搦~搪搬搭搴摔抢搐~掺撂摘搂撑摧摩摭挚抠抟摸摹摺掴摒~撅~~撩撇捞~撒挠撕撙~~撞撤拨抚播撮撰~撬掼攉挞撼挝拥擂掳擅择击挡操擎拧擒~擗擘~撷搀挤~擢~擦拟摈搁撵擭掷扩摆擞扰攀摅拦撄攘携摄拢攒挛摊搅攫揽~拃支~塃攴收~攸改攻放政故效敉~教敏救敕敖败~~敝敞敢散敦夐敬敲整敌敷数~~敛毙敩~文斌斐斑斓蟥斗料斛斜斝斟斡斢斤斥斧斨斩斯~新断~~~方於施~旎旁旂旃旄旅旆~旋旌族旖旒~~~旗烩无既~日旦旨早旬旭旰旱晒旺昌昂昆昃明昏易昔晗昉昕昝星映春昧昨昭是昱昴昵昶晁时晃晋晌晏晚晢昼晞晡晤晨晦暎普景晰晳晴晶晷智晬暄暇暍暑暖暗旸暝畅晕晖暂旻暮~暴~暹暨晓暾~~昙~曙~曛曜曝~旷曦昽曩~昇曰曲曳更曷书曹曼曾替最会~~月有朋服朔朐朓~朕朗望~朝期~朦胧耠木未末本札术朱朴朵朽杆杈杷杉杌李杏机材村杓杖柈杜杞束梠栓杪杭柿杯杰东杲杳朿杵棵杼松板枉析枕林枙枚果枝~枇枋~枘枯~枳枵架枷枸~~柁柄柏某柑柒染柔柘柙柚柜柝柞~柢查柬柯柮柰柱柳柴栅枰~樋栗校栩株核~根槾格栽桀桁桂桃桅框案桌桎桐桑桓桔桕栖栲栳桄桫桴~桶桷~梃梁梅梆梏梓栀梗~~条枭梢梧梨梭梯梱械棁梳梵~~桯弃棉棋棍棒棕枨枣棘棚栋棠棣栈棫棬森棰楦~棹棺椁棻棼~椅植椎椒棐棓棱棨椐椓~椰椹椽椿~杨枫楔栉~~~楚楞楝楠榆楢楣楫业楯楮极楷楹~~槠桢楩楸榔榕榖榘榛榜~榧榨榫榭荣榱榴榻榾槁槅槊构槌枪槎槐~~~~榷榼樑~椠~~概桨槔槽槿桩乐樊楼橦标~枢樟模样槥枞~樗~檩~樵树樽樾橄桡桥橐橙橛~橡~横樨柠椭桦~檖橘檀柽檄檐档桧槚~檠检樯檬梼~槟槛~~~橹榈~椟橼栎~枥榇棂栊~栏樱权~栾榄~柩欠次欣~欲款欷欹欺钦~歃歆歇~歉歌~欧歔~歙~~欤~欢~止正此步武歪歧岁历归钬歹死殁~殂殃殄殆殉殊殍殖残殕殛殒殇殚~殪殓殡歼镓殳段殷杀~~殿毁毅殴椵母毋每毒毓~比毖毗~鲣毛毡~毫~毯毳牦氅~毹~~氍~氏氐民氓氯气氛~氤氲浠水~永氾汁汀求~汗污汛汜汝江池汊汐汔汕汞汨汪汰汲汴汶汹~汾沁沂汽沃沈沉沌~沐没沔沖~沙沚沛沆沓汩汭沅~沫沮沱河沸油治沼沽沾沿洺泄泵泅泔泆泉泊泌泓法泗洩~泛泠泡波泣泥注泫泯泮泰泱~泳沭~泐泖~洄浐洋浕洎洒洗洛浉洞津洧汧洪洫洮洲洱洳洵浈洸活洼洽派洨流洙洚洹浙浚浣浦浩浪浮浴海浸浃浬泾消涉淳涓涔涕涞涢浡浜浥涂涅湟涑涯液涵涸~涿淅淆淇淋淑渊淘淙泪淝淡淤淦浄沦淫淬淮浛深菏混清淹浅添涎涪涴淀淄涠淞浯涭滧涣渚減渝渠渡渣渤渥涡测渭港~渴游渺浑湃湄~~湍湎湖湘湛~湧湫湮汤湲~濉~~湓湔湜~~源準溵溜沟溟溠溢~溥溧~溪温溯溱溲溶溷溺~溽滁滂滃沧灭滋涤荥滑滓滔滕~溘滇滘~~滞渗~滴沪浒洑滚满渔漂漆漏溉漓演~~漠汉涟漪漫渍~淌漱涨漳渐漾浆~~滹~漉溎沤漦漩漯溆漶溇漕颍泼洁潘潜潟潢涧润潦潭潮溃潼潴潸潺涩澄浇涝澈澔澌澎潖澛潞~~~浔潵澍澂~沩澡~~泽浍澳澹激浊濂浓渑~滪澧~~澴~~澶澼泞~湿~~~济濠濡涛滥濬濮濯潍滨泻~濞溅泺滤渎浏瀑~濒~瀚瀛沥潇~濑泸~瀣瀼~瀍泷~~潋澜~溁瀹~灌沣~滠~滩灏湾滟灞滦炸火灰灶灸灿灼~灾炊炎炒炕炙炘炞炫炬炭炮炯~炱炳炷~畑烈~乌~烙烘烜烝烟烹烺烽焌焙焚焜~焦焰然~焠焉煅焊炼煊煌煎煮炜熙~煜煞茕煤焕煦照烦煨~炀煽~熄~~熊熏荧~熟熔熨熬~热熠颎~~熹炽~~~~烫燃~灯燎烧燔燕营燠燥~燧~烛~燮燹烬燿焘爆~烁~炉烂~爝爟焮炖焖爨烤爪争~爬爰为爵睑父爹爷爸爻爽~趼爿~牂牁~藠片版~牌牒~牖牍~牙肼牛牝牟牡牢牣牧~物~牯牲犋牷特牵~犀犁~犍犒荦犊牺~~犬犯犴状狂狃狄狁狎狐狗狙狡~狠狩狴狸狭狼狈狻狺狷狢猁猖猗狰猛猜猝猞猊~猢猥猩猪猫猴犹猷猔猱猺狲猾猿~狱狮獍獐獒獗~~独狯獬獠狝获獯~犷猎兽獭献~狞猡玄率~~锔玉王~玕玔玖玟玠玢玦珏玩玫玲玳玷珂~珈珉玻珀珊珍~~珞~珠珙珖珥珣珩珪班珧珮珽现球琅理琇琉珶~琊琕~琚琛琢琤琥琦琨琪~琮琯琳琴琶琵~琬~琲玮瑕瑙瑚瑛瑜瑞瑟~~瑁~~瑗琐瑶莹玛瑰玱~~瑱~~璀璃璋~瑾~璆~~琎璇璐璜玑璘璞璟璠璧璨~环~珰玺璲瑸玙~珑璎~~瓒~~~~瓜瓞瓠瓢瓣瓤~瓦瓮瓴瓶瓷瓻甃甄~瓿瓯甍~甑甓~~~~瓩甘甚甜~咔生甡产甥甦~用甪甫甬甯甩田由甲申男甸~甾畀畋界畎畏町~~~畔畚畛畜亩留~毕畤略畦番画畬畯~~榃畹~当畸畿疆畴~锎疋~疏~疑钪疒疔痃痉疚疝痠疣疤疥疫痄疲疳疴疵疸疹疼疽疾~病症痂痊疰痍痒痔痕痧痘痛痞痣~痢痱痰痳痴痹痼~痿瘀瘁~~~疯疡~瘝瘐痪瘕~瘗瘟瘠疮瘢瘤瘥瘦疟~瘸瘰瘳瘴瘵瘘瘼疗癃痨痫癌癖~~疠瘩癜疖~~~瘪瘿疬癞癣瘾癯痈瘫癫疙癶癸登发钶白百皂的皆皇皈皋皎皓皖~~皑皤皞~~~~氪皮皴~皲皱~醌皿盂~盅盆盈益~盍盎盒盔盛盗盝盏盟~尽监盘盥卢盦~~盪盬蛞目盲直相盼盾省眄眇眈眉盯看盻眨盱睬眛真眠瞄~眦眩眙眯眵~眶眷眸眺眼~着~睨睇~瞅~睚睛睁睐睾睡睢督睦睫瞌~睥睹睿瞀~~瞋~瞎瞑瞒瞠瞪瞥瞧瞬瞳~瞭瞰瞆瞻瞽瞿~矍眬矗~~瞩眭矛矜矞砬矢矣知矧矩短矮~矫~镴石~矼砆矻砂砉砌砍砑砒砭砟砸砥斫砦破~砜砧砼砰~研硎硁硝硖砗硫硬碘砚确碍碌碎硼碗~碇碔碑碓~碡~碉砀碟碣碧硕磜~碰~码碾磁磅磊礅磋磐磙磔磕磉硙碴硵砖碛磨磬矶磲磺硗礁磷~础~~矾礳磴~矿砺砾砻礴碱示礽社祀祁祆祇祈祉~~祊~祐祓~祖~祚祛祜祝神祟祠~祲祥祧票祭~~祺禄禀禁~祸祯福禘禊~~祎祃~~禠~禧禅~礼祢祷禳~铼禸禹禺离禽镧禾秃秀私~秉秆秋种科秕秒~秘~租~秣秤秦秧秩秫秭~~秸移稀稂税~程~稍~稔稗稞稚~~~稠~稹~称稷稻稼稽稿~穄穆~~稣积颖穗~穑~秽秾~稳~穞穰罱穴~究穸穹突空~穿窀窄窅窆窈~~窒窕窖~窗窘窟窠窨窝~窬穷窑窳窎窭窸窣窥窾~~窜窍窦~窃蒗立竑站~~竟章竣童竦竖竭端竞铑竹竺竽竿笄笈笊笏笑笙笛笞笤笠笥符笨笋笪笫第笮笆~笱笳筅笔筇等筊筋筌~筎筏筐筑筒~答策筠~~筷笕~筮筲~筵~筱笺~~箍箇箔箕算~箝~管筝箐~~~箜~箬箭~箱箴箸~节篁~篆篇~箧~~篙篚篝筿篡笃~~~筛篦篪篲筚~~篷箦簕簇簋篓簌簏篌篾簃~~簟箪簠简篑~簦簧~簪箫~簸~~签~簿~篮~筹籍~籐~~籀箓~篯箨籁笼~~~~笾~箩篱~~篰米~~粉粒粕粗粘粟粢粤粥籼~粱粲粹粳~粼精糈糊~糕糇糖糗糜糁粪糟糠籽糙~~糯粝籴粑~粜~糸系纠纪纣约红纡纥纨纫紊纹~缐~纴~~纳纽纾纯纱纮纸级纷纭素纺索紫缏~~累细缩绅绍绀绋~绐绌终~组绊绂~~结绝~~绔绞络绚给绒~絮绖统丝绛~绢~~绑绨绣绠~~绥~经绡综绿绸綦线绶维綮绾~纲绷缀~纶绺绮绽绰~~~绫缁紧绯绻~绪缄缉绵缎缔缘~缌~编缓缅纬练~缊缃~缗~缈~缇萦缙缢缒绉缞缚缜缛县缣繁缟~~缝纵缧~缦絷缕缥縻总绩~缫缪繇缡~~~织缮~缭~绕~~缯绳绘~茧缰缳缴绎辫~继~纂缤缱~颣缬缵续~纤缠纩~缨~纛~缆绦缶缸缺~~~~罄罅~~罂罍~罐~网罔罕罘~~罟罡~~罩罪~置罚罨署~~~骂罢罹~罽~罗罴~羁鳓羊羌美羑羔~~羚羝羞~群羡义羯羲羧~羸羹羼羽翀翁翅翊翌翎习翔翕~翟翠翡~翥翦翩羿翚翮~翰翳翘翱翻翼~~~耀喱老考耄者耆~耋~而耍~耐~唡耒耔耕耗耘耙耜耢~~耩耦耨耧耰钌耳耶耻耽耿聃聆聊聒圣聘聚闻联聪声耸聩聂职~聋啉聿肄肃肆肇呤馏肉肋肌肓肖肘肚肛肝股肢肥胺肩肫肯肱育肴朊肺胃胄背胂胔胍胎~胖胙胚胳胝胞胰脒胭胯胡胥胸胼能胾脂腺胁~胱~脊脚脘胫脆腈~脧脩膨脱脬脯胀脾腆腊腋肾腐腑腓腔腕腥脑腴肿腮脿腰腱肠腹腠腿膀膂腩膏肷~膈膊腘肤膛膜膝胶腻~膳膺~~膻脍脓臀臂~臆脸臊脐~~臃胪~脏脔胤臣卧臧临栌自臬臭~~镥至致~~臻氇臼臾舁舀舂舄舅与兴举旧~摞舌舍舐舒舘舖舛舜舞~镅舟~舡航般舫~舷舵舶船舸~舳舴艇艋艄~~~艘舱舣艟艨~舰舻酶艮良艰钔色~艳~艸艽艾芃芄芊芋芍芎芑芒芙芝芟芡艿芤芧芨芥芩芪芫芬芭芮芯芰花芳芷芸芹刍芼芽莜芾苑茆苒苓苔苕苗苄苛苜苞苟苣苡若苦苎苫英苴苹苻~苾茀茁茂范茄茈茅茇~茉茗荔茜~~茨茫茭茯茱兹茴茵茶~茸茹荀荃萄荆荸荇草~荏荐荑荒茝荄~~荷荻荼荽莅~莎莒莓茎莘莞莠荚苋莆莨莩莪莫菟莉莽菀菁菅菇~菊菑~菖菔菘菠菜菩堇华菰菱菲~莙菹菼菽萁萃萜莱萋萌萍萎龿菡菌萩~苌萼~萱莴萸萹落葆~菸著~葚葛葡董苇葩葫葬葭药葱葳葵荤葸葺~蒂葑~~~莳蒙蒜蒡蒞蒟蒨~蒲蒸蒹蒺苍蒿荪蓁蓂蓄蓆蓉蓊盖蓖蓍蓏蓑~蓐蓓萏蔌蒯~~~蓬莲蓰莼~蔻蔫芗蓼~~蓿~蔑蕻蔓~蔗蔚蒌~蔡蒋荫蔴~茑~荜蔽蔬蕺~蕃蕉蕊荞莸蕖荛蕙~蕞~蒉蕨荡芜萧蕰薯蒇蕈~蕤~蓣~蕾~薢薄薅薇荟~蓟~蔷~~薛孽薜~薨萨薪薤蘖薏薰薳薹荠~~~~藉荩藏藐蓝藁藕~~藜艺~藤藩~薮~蔼蔺~藻~藿蕲蘅芦苏蕴~夔~萚藓蔹茏蘩兰~~蘧蘸萝蘼~~蘑虍虎虐~虔处虚虏虞号~虢~~亏~醚虫虱虻虹虺蚓蚍蚕蚊蚋蚌蚣蚤蚧蚩蚪蚨蚯蚰蚱蚜蚶~蛄蛀蛆蛇蛉蛑蛋蛙蛛蛟蚴蛤蛩蛱蛭蛾蛘蜂蜃蜇蜈~蜓蛸蛹蜕蜀蜉蜍蜊~蜘蜚蜜蜡蜣蜩蜥蜒蛔蜴蜞~螂蜢蜮蝎蛐蚀蝗蝘蝙蜅猬蝠蜿蝥虾蝮~蝶蜷蟮蜻蝌~蜾蝣蝻蝴蜗融蠓蚂螨螟萤~蚝螃蛳螫~螺蝼螽~蛰蟊螬螭~螯螳蟀蟆蝈蟋虮蟪蟒蟛蟠蝉~~蟹蚁蟾~蛏蠃~蚃蝇虿~蠕蠖蠛~~蠡蠢蛎蟏蠹蛊蠲~蛮虬血嘧~衄衅~众~~嚜行衍~~衒~~街衙~~卫衡衢~衣表衫衰衲衷衩~衽衾衿袁袈袋袍袒袖~袜~~~袤袪被袂~~~袱裁裂袅裎裀~裒裔裕裘裙补装裟~裨~裰裱裳裴裸裼裹~裾~褊裈~褂褪褐褓袆褙褡褚褥~褫褰裤褦~褶亵~襄衮襁袢袄~~~褒~裣裆襟襦~~褴褛~~衬~袭~襶~襾西要覃覆~~~镎见规觅视觇~觋觎~亲觊觏觐觑觃觉览觌觍观~氖角觔觖觚~~解觥~觫~觱觳觞触~~~萘言订讣訇计讯讨讦训讪讫讬记讧~~讱讹讶讼诀讷访许设讻~诉诃诊证~訾诂诋詈~讵诈诒诏评~诎诅词~诩询诣~试诗诧诟诡诠诘话该详诙诖诓诔诛~~詹~认~诳誓诞诱诮语诚诫诬误诰诵诲说谁课谇诽谊訚调谄谆谈诿请诤诹谅诼论谂~谀谞谝~~谔谛谐谏谕谘讳谙讽诸谚~谖诺谋谒谓谍~~谌誊诌~謇~谎谜谧谑谤谦谥讲谢~谣~谡謦谟谪谬讴谨谩~~~~谲讥~~谮识谯谭~谱警~谵譬译议谴护诪誉读谫~变~雠詟谗谶让~~~谠谳~~谷~豁~硇豆岂~豌豉豇~~~~~豕豚~象豢豨豪豫~豭豳~铌豸豹豺貂貆貅貉貊貌~~貔~脲贝贞负财贡~贫货贪贩贯责贮~贰贵贬贷买贶费贴贻贸贺贲贳赂赁贿赅资贾贼~赈赊宾赇赒赉赐~赏赍赔赓贤卖贱赋质账~赌赖赗~赚赙购赛赜~贽赘赠赞~赡赢赆赃赑赎~赝赣~赤赦赧赫赭赪钕走赳赴赶起趁趄超越~赵趣趑趋趟蒎足趵趾~趺~~跋~跌跎跏跑~跖跚跛距~跫跟~跣跨跪跬路踩跳跽踉踊~踏践踔踖踝踞踢踣踧~踡踟踮~~踵踹蹓踽蹁蹂蹄踱蹀蹐蹇蹈蹉蹊跃跄跸~蹙~蹒~~~~蹯蹲蹴蹶跷~~蹬蹭蹰躁~躅躇趸踌跻~躐踯~踬~跹蹑~躏蹦~身躬躭躲躯~~躺车轧轨军~轩轫轭软轱轸轴轵轷轶轺轼较辂~载~~轾辄~辅轻~~辆辎辉辍辇辈轮辋~辊~辑辏输~辐~~~~辗舆毂辖辕~辘~~转辙轿~~~~~轰辔轹轳~辛辜辟~辣~办辨辞辩耪辰辱农狍辵迂迄迅~~迎近迓返~迢迤迥迦迨迪迫迭逄述~迷迸迹追迺退送适逃逅逆逋逯逍透逐逑途迳逖逗这通逛逝逞速造逡逢连逭逮~进逵逶逸~逼遇遁遂遄逾~运遍过遏遐遑遒道达违遘遥遛逊递远~遣遢~遨~遭遮~迟遴遵~迁选~遗~辽遽避邀迈邂还~迩邃邈边逻逦疱邑邛邗邙邕邢~那邡邦邨邪邠邯邱~邴邳邵邶邸邰邽郁郅郇郊~郃郗郄~郛郎郡郢郤~郜郏部郭郴邮郯都郿鄂邹鄄邬乡鄌郧鄙~鄢鄞鄠鄜邓~郑邻鄱邺郐郸~鄯邝酂酃酆郦郝酉酊酋酌配酎酒~酗酢酥酣酤酡酩酪酬酲酵酷酸酴酹酞~醅~醇醉~醋醍醐醒~~酝~醢~醪医酱醮醯醴~醵醺~~~酿~~~锫釆采释釉里重野量~锌金钊钉釜针钓钏钙~~钗~钯钝钩钤钠钞钮钧铃钹钰~钿钜铉~钳铅钺钵~铇铏铰钲银铳铜钴铂铣铨铢铭铦衔铫锐钾销锈锉铹铤铗锋锓铀锄铓铺铻~锯钢录锥锟锤锱铮锭钱锦锚锡锢错锛锜~锅锻铋铵锹键~锺锴镀锷锽锸锲~锾~~锁~~锘~镃~铠镐镒镇镑镞链镝鏖铿锵镗镜镘镖镛镂铲~锑錾铙铧铝镪钟镫镌镰镯铁镮铎镍铛~铸镬镔~鉴~钨~铄~镳~钥镭镶~镊~锣~銮凿锰长蜱门闩闪闫闭闬开闳闰闲~间闵闸~阂~阁阀闺闽阃阆闾阅阊阉阎阏阍阈阒~闱~阔阕阑阇阗阌闿阖阙闯~关~阓阐阚~阛闼~阜阝~阡~~~阮~阱防阪阻阼阿陀陂附陋限陌降陔陉陛陕陞陟陡院阵除陪陬阴陲陈陴陵陶陷陆~阳~隍~隅隆隈陧队隋阶隔陨~隗隘隙际障~~隧~险~隰隐隳陇随隶~苤隹隻隼雀雁雄雅集雇雉隽雌雍雎~雒雕巂虽雘双雏杂~~~难钷雨雩雪雯~~~零雷雹电需霂~霄霈霉霆震霍霎霏~霓霖霜霞~~雾霰霪~露~霸霹~霁~霾霭雳叇灵叆~青靖靓靛静镤非靠靡氆面~~靥钎革靳靴鞅靶靰~~~鞍巩鞋~鞘~鞡~~鞠~鞫~鞭鞮~~鞲鞴~~鞑~鞯羟韦韨韩韧~~~~~~韪韬韫~~炝韭~~~音韶韵~~~苘页顶顷项顸顺须颂颃预顽颁颔顿顼~颀~颇领~颉颐颚~颏~头颒颊颕~颈颓频颗~~题额颜~颛~颡颠类~颟颢~顾颤显颦颅颧粬风~飒飓飔~飏飖飕飘飙飗~~飞醛食~饥饤~飧饨饪饫饬饮饭饴饲饱饰饸饹饺饼饻饷养饵餐饾~馁饿~馂馀馄~馅饯饽~馍馆~餮~~饧~饩~~馒~馑馈馔~~~饶饔饕飨餍~馋~首馘馗炔香馥馨~~~蛲马驭冯驰驯驮驲驳~驻驽驹驾骀驸驶~~驼驷~~骈~骇~骆~骃骎骏骔骋骓骍~~~骑~骐骛~骗骢~~~~骞腾驺~骟骚骝骡蓦骜骖骠驱~~骅~骁~骄骕验~惊~~驿骤驴骧骥~骊~骨~骶肮骱骰骷骸骼~髀~髅~髑~体髋髓鞣高铷髟髡~~髦~髫髭~髯鬃~髻髹~鬈~~~鬐~~鬘~~~鬟鬣鬓~鬥~~阋~阄铯鬯鬱锶鬲~~~鬻~鬼魁魂魃魄~魅魏~~魈魍魉魑魔~魇唢鱼鱿鲁鲖鲂鲇鲋鲐鲊鲑鲔鲘鲍鲞鲜鲛鲧鲤鲠鲨鲭鲵鲳鲓鲲鲸鲫鲩鳊鲽鳅~鲡鳃鳏鳒鲥鳍鳌鲶鳗鳀鳖鳝鲟鲎鲙鳣鳞鳔鳜鳘鲮鲈鲄鸟~鸠凫~凤鸣鸢~鸱鸩鸨~鸦~~鸳鸮鸪鸯鸭鸰鸲鸿鸽~~鸺鹈鹅鹃鹄鹁鹉鹆鹌~鹊鹑~鹏鹍~鹙鹕鹗鹜莺~鹤~鹡鹚鹒~鸧~鹘鹣鹢鹞鸡~鸥鹧~鹥鸷鸶~鹫鹰鹭鹪鹩~鹬鹯~鸴鸬鹦鸾~鹳鹂~卤~~盐鹾熵鹿麂铈麀~麇麈麋~~麑麒麓~丽~~麝~麟~~涮麦~~~麹蒴麻麽麾~黄~黉铊黍黏黎~溚黑黔默黛黜点黝黠黥黧~黯~~黡黩傣黹黻黼钛黾鼋~鼌~~鼍钽鼎鼐~鼒~鼓~鼗~鼙~~羰鼠鼢~鼬鼯鼹鼷醣鼻~鼾~~铽齐斋~齑菾齿龀龁龂龃龄龆龈~~龉龊~龋腭龌~龙厐龚龛舔龟烃龠~~楟酮茼烔钍佤烷烯螅氙酰鳕荨垭铱钇镱铟铕~鳟蟑礃锗酯~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~万丘乒乓甭孬~~~么~乩~~亍亓亘~~~仂仉~伃~伽~伫~~~佼~佴佫~侢~~~~~~伣俅伡~~~~侴~倢~倴倔~~偲~~~~偬~~偌~~~~僬~~~~~~儡傩~~~~~~~~~~~~党凃~减~~冨~~~~剞劂刿~~~~~~勋~~匆~~~吋~~吱~呎听~~~~咚~~咥哆咻~~呙~~呗唑~啗唪唼啐啍唶~~~~~唝~~~~~~~~啯嘌唠噙~~~呒~哒~~~嚆~~嚭呖噜~喾啃~囝囡~圊~~~~~圯圪壳~坻~~~坿垇~垞垤垚垌~垟垕~~埂~垸~~埌~埕~~~~~堉堎堀堌~~~塓~堍~埚塬塱塝堽~塥~~墕~~~~垱~~~墙~~墒垅~~~~夼~~~~~~~~~~~姘娒~~~~~~~婥~~媄媞~媮婿~~婳娴妩嫒~孃~~~~~~孖~~~~~~~~屲屴屼~岙岍岜岨岬岞峃峇~~~峱~~崞崮~~崽崴峣~~~嶓崄~~~~岿~~~~~巯~~幞~~~~~庄~~~廒~庼~~~~~异弌弎甙~~~忪~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~扡扦抃~~~~掰拶~~捃~~~挜~掮揸~~~~~揎~~揶~~~搢揾~~~~~搡~~~~摷~搿~~挦~揿~掸~~~~~掱~~~~~~~~~敜敫~~~斏~~~~~~~昀~昊~~~晟~晧~晾暋暌~~~晔暧~~~~~~~~~~杠~~杅~~~杻~~~~~~~~~~~~~~栝~~~~桋栒栟桬~~~~枧棑~~棸~~椑~楙楀楂~~~~~~~椝~椫橇~檎~桪枟槜檑~檴~~橱~橥~榉~~~~~~~~~~~~~~~~~~~~~~~~~~~~毚毵~氞氟氨氧氥氦氢氰~氮氩氕氘氚~~~~~~~~~~氿汆沄沇~~~~~~~~洴~涌~~~浤~~浼淖~~~淠~~沨~~~渌淼渲~~溏~~溴滉滏~~~~~漷澉~~沵~滢瀌~~~~~~~~~~~~~~~灺炅~~~~~~~~烱~焯~~焱~~~~~~~~~~~~熳~燋~烨~~~~~~~~~~~~~~~~~牮~~~~犇犄~~~~~~~~~~~狨~~~~~猆~~~~~猃~猕獾~~~~玥~~~珺~琼琷琰珐珲瑄瑂瑔瑢琏瑭~~~~璩~瑷~~~~~~~~~~甏~~~~畈疃~~~~疢~~~~~~痤~瘃~瘄瘈瘌~~瘭~~瘅癒~~~~~~~~~~癿~~~~~盹~~眚眢~~~~~~~~~睽~~瞟瞫~~~~~~矬~矽~~砢砣砠~砝~~砷~~~~硐硅~~硭硪~~碚~~~碳碶~~~~~磡~~硚~~礞硷硒~~~~~~~~~~禚~禤~~~~~~~~~稖~~~~~~~~窿~~竜~~~~筘~~~~~~~篥~簉~~簰籝~~~~~~~~~~粞粦粮~~粽糅~~~~~~糌~~~~纼~纰~绁~~~~~~绲缂~~~绬~缑~~~~~~~~~~~~~~~~罾~芈~~~~~~~~~~~~~~~~聱~~~~肪胛~脉胆~~~脞~~~~~脖~~~~腌~~~~膘~~~臑膑~~~~~~~~~~舢舨舺~~~~~~~~~~~茓芘~~~荅~茬莦~~~~~~荝~~~葠蓪~~~苁蓷~~~薸~~~~~~~~~~~~~~~~~虒~~~~~~~~~蚬~~~蝓~~蝤螓~~~~螗螵~~蟢蠋蛴~蠭~~~~~~~~~~~~~~~裢~~~~~~~襞~~~~~~~~~觜~~~~~~~~诇~~~~~~诨~~~~~谉谰~~~~~~~~~~~~~~~豮~~~~贠~~~~~趱~~~跤~~~~踦踪~~~~~~蹩~~~蹼~躞~~~~~~~~~~~轲~~~~辚~~~~~迮~~~~~邋~~~~~邘~~~郈~郚~~郫~~郓~~郾~~~~~~~鄚鄣~~~~~~~~~~~~~~~~~醑~~~酾酽~~~钋钐~钒~钑钫~钭钘~铍钻铆~~钼~~铐~~铬~~鋆~~锂~锒钡~~~铔~~锨~锬锖~锠锞鍪~铡镁钖锳~~镏~~镉铩鏊蓥鎏~~~~~镦~锏镨镣~镡镢~~~锧鑫~~~~~~~~~~~闹~~~~阽~~~~~~~~~~~~~~~~~~~靔~~靺~靼~~鞨~~~~~~~~~~~~~~~颋颌~~~颙~~~~~~~~~~~~饦~~~~~馊馎~~~~馃~~~~~~~~驵~~~~~~骦骉~~~~~髁~~~~~~~~~鲀~鲅~鲒~~鲰鲻鲷鲗鳇鲝鳆鳄鲢鲦鲱鲴鳁~鳎鳢鲚鳙鳠鲿~鳛~~~~~~~~鸵鹓~鹖~鹔~~鹴~~~~~麸~~~黟~~~~~~㋀㋁㋂㋃㋄㋅㋆㋇㋈㋉㋊㋋~~~~~~~ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ~~~~~~~~~~~АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯЪЫЬЙ㍘㍙㍚㍛㍜㍝㍞㍟㍠㍡㍢㍣㍤㍥㍦㍧㍨㍩㍪㍫㍬㍭㍮㍯㍰~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ~㏠㏡㏢㏣㏤㏥㏦㏧㏨㏩㏪㏫㏬㏭㏮㏯㏰㏱㏲㏳㏴㏵㏶㏷㏸㏹㏺㏻㏼㏽㏾~~~~~~~~~ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ~~~~~~~~Ω０１２３４５６７８９／＋－×÷。，、·；：？！＝‘’“”（）—…~~~~《》　〷'
 
   let table = TABLE_IMC
   let isUpperCase = true
@@ -273,45 +319,101 @@
   let timerId = -1
   let inputCodes = ''
 
-  function showInput() {
-    txtInput.textContent = inputCodes || 'reading...'
+  function inputChinese() {
+    let digits = ''
+    for (let i = 0; i < inputCodes.length; i += 5) {
+      const item = table[inputCodes.substring(i, i + 5)]
+      digits += (item ? item[0] : '#')
+    }
+    const char = CHINESE_CHARS[+digits]
+    if (char === '~') {
+      say('保留字码', selectVoiceZh)
+    } else if (char) {
+      say(char, selectVoiceZh)
+      writeChar(char)
+    } else {
+      say('无效字码', selectVoiceZh)
+    }
   }
 
   function flushInput() {
-    const [name, upper, lower] = table[inputCodes] || []
-    if (name) {
-      const char = isUpperCase
-        ? upper
-        : (lower || upper.toLowerCase())
-      writeChar(char)
-      say(name)
+    const item = table[inputCodes]
+    if (item) {
+      const [voice, upper, lower] = item
+      if (isUpperCase) {
+        writeChar(upper)
+      } else {
+        writeChar(lower || upper.toLowerCase())
+      }
+      if (voice) {
+        say(voice)
+      }
+    } else if (inputCodes.length >= 10) {
+      inputChinese()
     } else {
       say('invalid')
     }
+    clearInput()
+  }
+
+  function showInput(text, title) {
+    txtInput.textContent = text
+    document.title = title
+    mediaTitle = title
+    updateMediaMeta()
+  }
+
+  function clearInput() {
     inputCodes = ''
-    showInput()
+    showInput('reading...', MEDIA_TITLE)
+  }
+
+  function press(code) {
+    inputCodes += code
+    showInput(inputCodes, inputCodes)
+    clearTimeout(timerId)
+    timerId = setTimeout(flushInput, +txtDelay.value)
+  }
+
+  function concatDakuten(src, dst) {
+    txtOutput.value = txtOutput.value.replace(/.$/, s => dst[src.indexOf(s)] || s)
   }
 
   function writeChar(char) {
     switch (char) {
-    case '\b':
+    case CTRL_BACK:
       txtOutput.value = txtOutput.value.slice(0, -1)
       break
-    case '\r':
+    case CTRL_CLEAR:
       // remove last line
       txtOutput.value = txtOutput.value.replace(/.+$/, '')
       break
-    case '\x0E':
+    case CTRL_SPEAK:
+      // say last line
+      say(txtOutput.value.match(/.*$/)[0])
+      break
+    case CTRL_LOWER:
       isUpperCase = false
       break;
-    case '\x0F':
+    case CTRL_UPPER:
       isUpperCase = true
       break;
-    case '\t0':
-      table = TABLE_IMC
-      break
-    case '\t1':
+    case CTRL_IMC:
       table = TABLE_WABUN
+      curVoiceList = selectVoiceJa
+      break
+    case CTRL_WABUN:
+      table = TABLE_IMC
+      curVoiceList = selectVoiceEn
+      break
+    // '\u3099' and '\u309A' do not work on some voice systems
+    case '゛':
+      concatDakuten(
+        'うかきくけこさしすせそたちつてとはひふへほウカキクケコサシスセソタチツテトハヒフヘホ',
+        'ゔがぎぐげござじずぜぞだぢづでどばびぶべぼヴガギグゲゴザジズゼゾダヂヅデドバビブベボ')
+      break
+    case '゜':
+      concatDakuten('はひふへほハヒフヘホ', 'ぱぴぷぺぽパピプペポ')
       break
     default:
       txtOutput.value += char
@@ -320,60 +422,33 @@
     txtOutput.focus()
 
     const wordsLen = txtOutput.value.length
-    const wordsOut = wordsLen > 12
-      ? '...' + txtOutput.value.slice(-12)
+    const wordsOut = wordsLen > MEDIA_ARTIST_MAX_LEN
+      ? '...' + txtOutput.value.slice(-MEDIA_ARTIST_MAX_LEN)
       : txtOutput.value
 
-    updateMediaMeta(`[${wordsLen}] ${wordsOut}`)
+    mediaArtist = `[${wordsLen}] ${wordsOut}`
+    updateMediaMeta()
   }
 
-  const sayCache = {}
-
-  async function say(fileName) {
-    const path = table.voicePath + fileName
-    let blobUrl = sayCache[path]
-    if (!blobUrl) {
-      let blob
-      try {
-        const res = await fetch(`voice/${path}.mp4`)
-        blob = await res.blob()
-      } catch (err) {
-      }
-      if (!blob || !blob.size) {
-        console.warn('failed to load:', path)
-        return
-      }
-      blobUrl = URL.createObjectURL(blob)
-      sayCache[path] = blobUrl
+  function say(word, voiceList = curVoiceList) {
+    if (!window.speechSynthesis) {
+      return
     }
-
-    audioElem.onended = playBgm
-    audioElem.loop = false
-    audioElem.autoplay = true
-    audioElem.src = blobUrl
+    const utter = new SpeechSynthesisUtterance(word)
+    utter.voice = getSelectedVoice(voiceList)
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel()
+    }
+    speechSynthesis.speak(utter)
   }
 
   const bgmUrl = genBgm()
 
   function playBgm() {
-    audioElem.onended = null
-    audioElem.loop = true
-    audioElem.autoplay = true
     audioElem.src = bgmUrl
     setTimeout(() => {
       audioElem.play()
     }, 100)
-  }
-
-  function showStatus(msg) {
-    txtStatus.textContent = msg
-  }
-
-  function press(type) {
-    inputCodes += type
-    showInput()
-    clearTimeout(timerId)
-    timerId = setTimeout(flushInput, +txtDelay.value)
   }
 
   function genBgm() {
@@ -408,19 +483,23 @@
     const soundData = new Uint16Array(bytes.buffer, 44)
     soundData.fill(10)
 
-    const blob = new Blob([bytes], {
-      type: 'audio/wav',
-    })
+    const blob = new Blob([bytes], {type: 'audio/wav'})
     return URL.createObjectURL(blob)
   }
 
-  function updateMediaMeta(words) {
+  const MEDIA_TITLE = 'Morse Code'
+  const MEDIA_ARTIST_MAX_LEN = /Windows/.test(navigator.userAgent) ? 20 : 10
+
+  let mediaTitle = MEDIA_TITLE
+  let mediaArtist = ''
+
+  function updateMediaMeta() {
     if (!navigator.mediaSession) {
       return
     }
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'Morse Code',
-      artist: words,
+      title: mediaTitle,
+      artist: mediaArtist,
       artwork: [
         {
           src: 'logo.webp',
@@ -431,26 +510,30 @@
     })
   }
 
-  function onAduioPrev() {
-    if (inputCodes) {
-      flushInput()
-    } else {
-      writeChar('\b')
-      say('backspace')
-    }
-    clearTimeout(timerId)
-  }
-  function onAudioPause() {
+  function onAudioPause(type) {
     press('.')
   }
   function onAudioNext() {
     press('-')
   }
+  function onAduioPrev() {
+    if (inputCodes) {
+      flushInput()
+    } else {
+      writeChar(CTRL_BACK)
+      say('backspace')
+    }
+    clearTimeout(timerId)
+  }
 
-  function init() {
+  function showStatus(msg) {
+    txtStatus.textContent = msg
+  }
+
+  function onFirstClick() {
     playBgm()
     showStatus('input ready')
-    showInput()
+    clearInput()
 
     navigator.mediaSession.setActionHandler('previoustrack', onAduioPrev)
     navigator.mediaSession.setActionHandler('pause', onAudioPause)
@@ -464,16 +547,87 @@
       })
       console.log('macos firefox mode')
     }
-    updateMediaMeta('')
+    updateMediaMeta()
+  }
+
+  let config = {
+    voice: {
+      en: 'Samantha',
+      ja: 'Kyoko',
+      zh: 'Tingting',
+    }
+  }
+  function loadConfig() {
+    const data = localStorage['headphone-morsecode']
+    if (data) {
+      let json
+      try {
+        json = JSON.parse(data)
+      } catch (err) {
+      }
+      if (json && json.voice) {
+        config = json
+      }
+    }
+  }
+  function saveConfig() {
+    localStorage['headphone-morsecode'] = JSON.stringify(config)
+  }
+
+  let curVoiceList = selectVoiceEn
+  let voices
+
+  function addVoicesList(selectElem, targetLang) {
+    selectElem.innerHTML = ''
+    const perferName = config.voice[targetLang]
+
+    for (let i = 0; i < voices.length; i++) {
+      const {lang, name} = voices[i]
+      if (!lang.startsWith(targetLang)) {
+        continue
+      }
+      const txt = /\(|（|English/.test(name) ? name : `${name} (${lang})`
+      const opt = new Option(txt, i)
+      if (name === perferName) {
+        opt.selected = true
+      }
+      selectElem.appendChild(opt)
+    }
+  }
+
+  function getSelectedVoice(selectElem) {
+    return voices[+selectElem.selectedOptions[0].value]
+  }
+
+  function onSelectVoice() {
+    const voice = getSelectedVoice(this)
+    config.voice[this.dataset.lang] = voice.name
+
+    if (!speechSynthesis.speaking) {
+      const utter = new SpeechSynthesisUtterance(this.dataset.test)
+      utter.voice = voice
+      speechSynthesis.speak(utter)
+    }
+  }
+
+  function onVoicesChanged() {
+    voices = speechSynthesis.getVoices()
+    addVoicesList(selectVoiceEn, 'en')
+    addVoicesList(selectVoiceJa, 'ja')
+    addVoicesList(selectVoiceZh, 'zh')
   }
 
   function main() {
+    // debug
     window.addEventListener('error', e => {
       showStatus('ERROR: ' + e.message)
     })
     debugElem.onclick = () => {
       debugBox.hidden = !debugBox.hidden
       textUA.textContent = navigator.userAgent
+    }
+    btnSpeak.onclick = () => {
+      say(txtOutput.value)
     }
     btnAudioPrev.onclick = onAduioPrev
     btnAudioPause.onclick = onAudioPause
@@ -483,8 +637,25 @@
       showStatus('MediaSession API is not supported')
       return
     }
-    updateMediaMeta('')
-    window.addEventListener('pointerdown', init, {once: true})
+    if (!window.speechSynthesis) {
+      showStatus('Speech API is not supported')
+      return
+    }
+    // iPhone
+    if (navigator.audioSession) {
+      navigator.audioSession.type = 'playback'
+    }
+    loadConfig()
+    window.onpagehide = saveConfig
+
+    selectVoiceEn.oninput = onSelectVoice
+    selectVoiceJa.oninput = onSelectVoice
+    selectVoiceZh.oninput = onSelectVoice
+
+    speechSynthesis.onvoiceschanged = onVoicesChanged
+    onVoicesChanged()
+
+    window.addEventListener('pointerdown', onFirstClick, {once: true})
     showStatus('click anywhere to start')
   }
   main()

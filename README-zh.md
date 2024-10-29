@@ -28,7 +28,7 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 距上一次按键达到 `Delay` 毫秒时，`Input` 中的内容将会被自动输出。
 
-本程序支持 [国际码（IMC）](https://morsecode.world/international/morse.html)、[和文码 (Wabun Code)](https://en.wikipedia.org/wiki/Wabun_code) 以及部分私有特征。
+本程序支持 [国际码](https://en.wikipedia.org/wiki/Morse_code)、[和文码](https://en.wikipedia.org/wiki/Wabun_code)、[中文电码](https://zh.wikipedia.org/wiki/%E4%B8%AD%E6%96%87%E7%94%B5%E7%A0%81) 以及部分私有特征。
 
 ## 特殊功能
 
@@ -40,7 +40,11 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 * `<SN>`: 返回到国际码 (`...-.`)
 
+* `\d{2,4}`: 输入 2~4 个数字，输出 1 个汉字。参考 [1983年标准电码本](https://zh.wiktionary.org/wiki/Appendix:%E4%B8%AD%E6%96%87%E7%94%B5%E7%A0%81/%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%861983)
+
 ## 私有功能
+
+* `<SS>`: 语音朗读最后一行 (`.` x6)
 
 * `<LO>`: 切换到小写/平假名（`.-..---`）
 
@@ -50,7 +54,7 @@ https://github.com/user-attachments/assets/37cf43c2-ec2f-429a-b2b2-47a96a5ad242
 
 * `<X>` + 假名 = 小假名 (`-..- ?`) 
 
-  支持 `っ ゃゅょ ぁぃぅぇぉ` 以及相应的片假名。
+  支持 `っ ゃゅょ ぁぃぅぇぉ ゕゖ` 以及相应的片假名。
 
 ## 键盘操作
 
@@ -67,9 +71,3 @@ https://github.com/user-attachments/assets/6b51ff7e-8c3b-4607-8da6-8e6534e57c74
 因此你可以在手机上打开该网页，锁屏后盲发摩尔斯电码。只需按耳机，听反馈，无需看屏幕。
 
 https://github.com/user-attachments/assets/4fd3d899-7153-4029-8643-4775c699265e
-
-## 已知问题
-
-火狐浏览器不稳定。
-
-iPhone 目前不支持 Media Source Extensions，并且 AudioContext 和 MediaSession 会有冲突，因此最终方案只用单个 `<audio>` 播放所有声音。

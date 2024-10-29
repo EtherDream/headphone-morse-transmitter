@@ -30,7 +30,7 @@ When ⏮️ is pressed, if `Input` buffer is not empty, it will be flush immedia
 
 When `Delay` time has passed since the last key press, `Input` buffer will be flush automatically.
 
-This program supports [International Morse Code](https://morsecode.world/international/morse.html), [Wabun Code](https://en.wikipedia.org/wiki/Wabun_code) and some private features.
+This program supports [International Morse Code](https://en.wikipedia.org/wiki/Morse_code), [Wabun Code](https://en.wikipedia.org/wiki/Wabun_code), [Chinese telegraph code](https://en.wikipedia.org/wiki/Chinese_telegraph_code) and some private features.
 
 ## Special Feature
 
@@ -42,7 +42,14 @@ This program supports [International Morse Code](https://morsecode.world/interna
 
 * `<SN>`: Return to International Code (`...-.`)
 
+* `\d{2,4}`: Input 2~4 digits and output 1 Chinese character.
+
+  Refer to the [Chinese telegraph code/Mainland 1983](https://en.wiktionary.org/wiki/Appendix:Chinese_telegraph_code/Mainland_1983).
+
+
 ## Private Feature
+
+* `<SS>`: Say the last line (`.` x6)
 
 * `<LO>`: Change to lowercase/hiragana (`.-..---`)
 
@@ -52,7 +59,7 @@ This program supports [International Morse Code](https://morsecode.world/interna
 
 * `<X>` + kana = small kana (`-..- ?`) 
 
-  Supports `っ ゃゅょ ぁぃぅぇぉ` and the corresponding katakana.
+  Supports `っ ゃゅょ ぁぃぅぇぉ ゕゖ` and the corresponding katakana.
 
 ## Keyboard
 
@@ -67,11 +74,3 @@ Alternatively, you can click ⏮️ ⏸️ ⏯️ buttons in the media control p
 This program can run in the background, even if the browser is minimized or the screen is locked. So you can use this program on your phone to practice Morse code, using only your fingers and ears, without eyes!
 
 https://github.com/user-attachments/assets/4fd3d899-7153-4029-8643-4775c699265e
-
-## Known Issues
-
-Firefox is unstable on MacOS and Windows.
-
-On MacOS, sometimes only one headphone can send commands (e.g. my AirPods right headphone works fine, but left headphone won't pause multiple times).
-
-On Windows, sometimes the first ~0.5s of sound will be lost (even when saved to disk and played with player software, probably a buffer issue with the Bluetooth driver), but Chrome works fine.
