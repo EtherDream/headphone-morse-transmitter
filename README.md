@@ -69,6 +69,9 @@ https://github.com/user-attachments/assets/60bc966c-e960-4c0e-82e3-e4769613d91d
 
 Alternatively, you can click ⏮️ ⏸️ ⏯️ buttons in the media control popup.
 
+https://github.com/user-attachments/assets/45395d2d-5624-4061-be12-bbe22c645d86
+
+
 ## Blind Mode
 
 This program can run in the background, even if the browser is minimized or the screen is locked. So you can use this program on your phone to practice Morse code, using only your fingers and ears, without eyes!

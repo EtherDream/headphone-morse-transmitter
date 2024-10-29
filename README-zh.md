@@ -64,6 +64,9 @@ https://github.com/user-attachments/assets/60bc966c-e960-4c0e-82e3-e4769613d91d
 
 此外，点击媒体控制浮层中的 ⏮️ ⏸️ ⏯️ 按钮也可以实现同样的效果。
 
+https://github.com/user-attachments/assets/45395d2d-5624-4061-be12-bbe22c645d86
+
+
 ## 后台运行
 
 本程序可在后台运行，即使浏览器最小化，甚至锁屏也能运行。
